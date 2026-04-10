@@ -413,11 +413,11 @@ Deliverables:
 Validation:
 
 - canonical local scripts:
-  - `npm run doctor`
-  - `npm run lint`
-  - `npm run typecheck`
-  - `npm run test`
-  - `npm run test:coverage`
+  - `pnpm run doctor`
+  - `pnpm run lint`
+  - `pnpm run typecheck`
+  - `pnpm run test`
+  - `pnpm run test:coverage`
 - CI green on the same gates
 - Codecov upload configured
 - Codecov upload failure is non-blocking if local coverage thresholds and artifact generation succeeded
@@ -442,24 +442,24 @@ No result is acceptable unless it has been validated by the repo-standard gates 
 
 Mandatory local gates before accepting implementation work:
 
-- `npm run doctor` must pass
-- `npm run lint` must pass
-- `npm run typecheck` must pass
-- `npm run test` must pass
+- `pnpm run doctor` must pass
+- `pnpm run lint` must pass
+- `pnpm run typecheck` must pass
+- `pnpm run test` must pass
 
 Mandatory local gates before accepting feature-complete milestones:
 
-- `npm run test:coverage` must pass
+- `pnpm run test:coverage` must pass
 - coverage reports must be generated in a format consumable by Codecov
 
 Mandatory CI gates:
 
 - CI must run the exact canonical scripts, not ad hoc equivalents:
-  - `npm run doctor`
-  - `npm run lint`
-  - `npm run typecheck`
-  - `npm run test`
-  - `npm run test:coverage`
+  - `pnpm run doctor`
+  - `pnpm run lint`
+  - `pnpm run typecheck`
+  - `pnpm run test`
+  - `pnpm run test:coverage`
 - coverage artifact generation is a hard gate
 - Codecov upload is non-blocking after artifact generation succeeds
 

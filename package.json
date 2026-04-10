@@ -11,6 +11,7 @@
   "files": [
     "dist",
     ".eye",
+    ".agents",
     "plans",
     "README.md",
     "AGENTS.md",
@@ -18,13 +19,18 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "docs:validate": "tsx src/scripts/validate-doc-structure.ts",
     "doctor": "tsx src/scripts/doctor.ts",
+    "hooks:install": "lefthook install",
+    "knowledge:sync": "tsx src/scripts/sync-knowledge.ts",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
+    "prepare": "lefthook install",
     "test": "vitest run",
+    "test:e2e": "vitest run --config vitest.e2e.config.ts",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "validate": "npm run doctor && npm run lint && npm run typecheck && npm run test:coverage",
+    "validate": "pnpm run doctor && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run test:e2e && pnpm run test:coverage && pnpm run docs:validate",
     "dev": "tsx src/index.ts"
   },
   "keywords": [
@@ -36,9 +42,11 @@
   ],
   "license": "MIT",
   "engines": {
-    "node": ">=20"
+    "node": ">=20",
+    "pnpm": ">=10"
   },
   "dependencies": {
+    "@cfworker/json-schema": "^4.1.1",
     "@modelcontextprotocol/server": "^2.0.0-alpha.2",
     "better-sqlite3": "^12.8.0",
     "pyright": "^1.1.408",
@@ -47,12 +55,14 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@types/node": "^25.6.0",
     "@biomejs/biome": "^2.4.11",
     "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^25.6.0",
     "@vitest/coverage-v8": "^4.1.4",
+    "lefthook": "^2.1.5",
     "tsx": "^4.21.0",
     "typescript": "^6.0.2",
     "vitest": "^4.1.4"
-  }
+  },
+  "packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319"
 }

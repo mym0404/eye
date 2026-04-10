@@ -45,9 +45,10 @@
 ## Requirements
 
 - Node.js 20+
+- Corepack
 - `rg` on `PATH`
 
-`npm run doctor` verifies:
+`pnpm run doctor` verifies:
 
 - Node runtime
 - `rg`
@@ -57,20 +58,40 @@
 
 ## Setup
 
+If your Node distribution does not expose `corepack` on `PATH`, install it once first:
+
 ```bash
-npm install
-npm run doctor
-npm run lint
-npm run typecheck
-npm run test
-npm run build
+npm install -g corepack
+```
+
+Project setup:
+
+```bash
+corepack enable
+corepack use pnpm@10
+pnpm install
+pnpm run doctor
+pnpm run lint
+pnpm run typecheck
+pnpm run test
+pnpm run test:e2e
+pnpm run build
 ```
 
 Full acceptance gate:
 
 ```bash
-npm run validate
+pnpm run validate
+pnpm run build
 ```
+
+Hook install / restore:
+
+```bash
+pnpm exec lefthook install
+```
+
+Knowledge docs live under `.agents/knowledge/`. The root `AGENTS.md` is a router only.
 
 ## Running
 
@@ -94,11 +115,14 @@ Example MCP client configuration:
 
 Unchecked results are not acceptable in this repository. Before claiming work is done, the expected local gates are:
 
-- `npm run doctor`
-- `npm run lint`
-- `npm run typecheck`
-- `npm run test`
-- `npm run test:coverage`
+- `pnpm run doctor`
+- `pnpm run lint`
+- `pnpm run typecheck`
+- `pnpm run test`
+- `pnpm run test:e2e`
+- `pnpm run test:coverage`
+- `pnpm run docs:validate`
+- `pnpm run build`
 
 Vitest coverage thresholds are enforced locally, and GitHub Actions uploads `coverage/lcov.info` to Codecov after coverage generation succeeds.
 

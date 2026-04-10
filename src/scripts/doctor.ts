@@ -48,6 +48,14 @@ const checks = [
     },
   },
   {
+    name: "mcp-server-runtime",
+    run: async () => {
+      const { createEyeServer } = await import("../mcp/server.js")
+
+      createEyeServer()
+    },
+  },
+  {
     name: "cache-schema",
     run: async () => {
       if (CURRENT_SCHEMA_VERSION < 1) {

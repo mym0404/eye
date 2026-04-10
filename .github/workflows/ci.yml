@@ -19,25 +19,40 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 25
-          cache: npm
+          cache: pnpm
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install ripgrep
+        run: sudo apt-get update && sudo apt-get install --yes ripgrep
 
       - name: Install
-        run: npm ci --silent
+        run: pnpm install --frozen-lockfile
 
       - name: Doctor
-        run: npm run doctor --silent
+        run: pnpm run doctor
 
       - name: Lint
-        run: npm run lint --silent
+        run: pnpm run lint
 
       - name: Typecheck
-        run: npm run typecheck --silent
+        run: pnpm run typecheck
 
       - name: Test
-        run: npm run test --silent
+        run: pnpm run test
+
+      - name: MCP E2E
+        run: pnpm run test:e2e
 
       - name: Coverage
-        run: npm run test:coverage --silent
+        run: pnpm run test:coverage
+
+      - name: Docs Validate
+        run: pnpm run docs:validate
+
+      - name: Build
+        run: pnpm run build
 
       - name: Upload Coverage Artifact
         uses: actions/upload-artifact@v4
@@ -51,4 +66,3 @@ jobs:
           files: ./coverage/lcov.info
           fail_ci_if_error: false
           verbose: false
-

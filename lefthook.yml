@@ -1,0 +1,17 @@
+pre-commit:
+  jobs:
+    - name: lint
+      run: pnpm run lint
+    - name: typecheck
+      run: pnpm run typecheck
+    - name: test
+      run: pnpm run test
+    - name: docs
+      run: pnpm run docs:validate
+
+pre-push:
+  jobs:
+    - name: validate
+      run: pnpm run validate
+    - name: build
+      run: pnpm run build

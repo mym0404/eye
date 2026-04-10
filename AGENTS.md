@@ -1,35 +1,52 @@
-# eye
+# eye Agent Router
 
-## Overview
-- `eye` is a public TypeScript MCP server for source-code browsing in large repositories.
-- The current implementation uses lazy `.eye/` cache creation, tree-sitter structural indexing, TS/JS semantic navigation, Python semantic navigation, and ripgrep fallback.
-- Keep docs and status reports honest. Do not describe planned work as shipped behavior.
+## Read Order
 
-## ExecPlans
-- For non-trivial features, refactors, or sequencing-sensitive work, read `PLANS.md` first.
-- Put active execution plans in `plans/`.
-- ExecPlans must remain restartable from only the repository tree and the plan document.
-- Update plan progress and validation notes while work is in flight.
+Read these files in order before making non-trivial changes:
+
+1. `.agents/knowledge/README.md`
+2. `.agents/knowledge/project-map.md`
+3. `.agents/knowledge/architecture.md`
+4. `.agents/knowledge/business-logic/indexing-cache-query.md`
+5. `.agents/knowledge/operations/validation-and-hooks.md`
+6. `.agents/knowledge/operations/source-sync.md`
+7. `PLANS.md`
+8. Active plan under `plans/`
+
+## Router Rules
+
+- Root `AGENTS.md` is only a router. Long-lived project knowledge belongs under `.agents/knowledge/`.
+- When code changes alter traversal, indexing, storage, semantic lookup, fallback search, or MCP tool behavior, update `.agents/knowledge/business-logic/indexing-cache-query.md`.
+- When project layout or module ownership changes, update `.agents/knowledge/project-map.md`.
+- When validation, CI, hooks, or package-manager flow changes, update `.agents/knowledge/operations/validation-and-hooks.md`.
+- Before changing knowledge docs, sync the configured external guide source with `pnpm run knowledge:sync`. Source-repo setup lives in `.agents/knowledge/source-repo.local.json`; instructions live in `.agents/knowledge/operations/source-sync.md`.
 
 ## Validation
-- Results are not acceptable unless they have been validated.
-- Expected gates for implementation work:
-  - `npm run doctor`
-  - `npm run lint`
-  - `npm run typecheck`
-  - `npm run test`
-- Expected gates before claiming feature-complete work:
-  - `npm run test:coverage`
-  - `npm run build`
-- Prefer `npm run validate` when the change is broad.
-- Do not say work is done if `lint`, `typecheck`, or `vitest` validation has not passed.
+
+- Use Corepack-managed pnpm only.
+- Standard implementation gate:
+  - `pnpm run doctor`
+  - `pnpm run lint`
+  - `pnpm run typecheck`
+  - `pnpm run test`
+  - `pnpm run test:e2e`
+- Feature-complete gate:
+  - `pnpm run test:coverage`
+  - `pnpm run docs:validate`
+  - `pnpm run build`
+- Broad changes should use `pnpm run validate`.
+- Do not claim work is done if `pnpm run lint`, `pnpm run typecheck`, or `pnpm run test` has not passed.
 
 ## Working Style
-- Keep traversal, indexing, storage, semantic adapters, and fallback search separated.
-- Prefer stable, restartable changes over shallow scaffolding.
-- Preserve `.eye/config.json` as the portable config surface and keep runtime/cache artifacts local.
-- Respect generated-path exclusions such as `build`, `dist`, `out`, `.eye`, and similar configured paths.
 
-## Fixtures
-- The committed test fixtures are small CI-friendly integration corpora.
-- Large OSS-derived fixture expansion belongs in the active ExecPlan and must be documented honestly if still pending.
+- Keep docs honest. Planned work stays planned.
+- Keep traversal, indexing, cache storage, semantic adapters, and fallback search separated.
+- Preserve `.eye/config.json` as the portable config surface.
+- Respect generated-path exclusions such as `build`, `dist`, `out`, `.eye`, and configured ignore paths.
+- If Git hooks are missing, restore them with `pnpm exec lefthook install`.
+
+## Current Scope
+
+- The shipped implementation is a single-root MCP server.
+- Semantic navigation is currently implemented for TS/JS and Python.
+- Fixtures in-repo are CI-sized integration corpora, not the final large OSS corpus.

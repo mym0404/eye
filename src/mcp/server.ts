@@ -268,10 +268,6 @@ export const createEyeServer = () => {
       title: "Find Symbol Definitions",
       description:
         "Find symbol definition candidates using lazy indexing, semantic backends, and ripgrep fallback.",
-      annotations: {
-        readOnlyHint: true,
-        idempotentHint: true,
-      },
       inputSchema: z.object({
         projectRoot: z.string().optional(),
         symbolId: z.string().optional(),
@@ -338,10 +334,6 @@ export const createEyeServer = () => {
       title: "Find References",
       description:
         "Find references using semantic navigation when possible, then supplement with indexed and ripgrep matches.",
-      annotations: {
-        readOnlyHint: true,
-        idempotentHint: true,
-      },
       inputSchema: z.object({
         projectRoot: z.string().optional(),
         symbolId: z.string().optional(),
@@ -411,10 +403,6 @@ export const createEyeServer = () => {
       title: "Refresh Index",
       description:
         "Refresh the lazy project-local index for the whole root or a narrowed scope.",
-      annotations: {
-        readOnlyHint: true,
-        idempotentHint: true,
-      },
       inputSchema: z.object({
         projectRoot: z.string().optional(),
         scopePath: z.string().optional(),
@@ -487,10 +475,13 @@ export const createEyeServer = () => {
     },
     async ({ projectRoot }) => {
       try {
-        const output = await withDatabase({
+        const context = await loadProjectContext({
           projectRoot,
-          run: ({ database }) =>
-            Promise.resolve(getIndexStatusSummary({ database })),
+          ensureRuntime: false,
+        })
+        const output = await getIndexStatusSummary({
+          projectRoot: context.projectRoot,
+          databasePath: context.paths.cacheDbPath,
         })
 
         return {

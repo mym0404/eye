@@ -1,4 +1,4 @@
-import { mkdir } from "node:fs/promises"
+import { access, mkdir } from "node:fs/promises"
 import path from "node:path"
 
 import Database from "better-sqlite3"
@@ -56,6 +56,9 @@ type ReferenceRow = {
 
 const now = () => new Date().toISOString()
 
+const asOptional = <Value>(value: Value | null | undefined) =>
+  value ?? undefined
+
 const scopeMatches = ({
   relativePath,
   scopePath,
@@ -73,17 +76,33 @@ const scopeMatches = ({
 export class EyeDatabase {
   readonly connection: Database.Database
   readonly projectRoot: string
+  readonly readonlyMode: boolean
 
   constructor({
     databasePath,
     projectRoot,
+    readonly = false,
   }: {
     databasePath: string
     projectRoot: string
+    readonly?: boolean
   }) {
-    this.connection = new Database(databasePath)
+    this.connection = new Database(
+      databasePath,
+      readonly
+        ? {
+            readonly: true,
+            fileMustExist: true,
+          }
+        : undefined,
+    )
     this.projectRoot = projectRoot
-    this.connection.pragma("journal_mode = WAL")
+    this.readonlyMode = readonly
+
+    if (!readonly) {
+      this.connection.pragma("journal_mode = WAL")
+    }
+
     this.connection.pragma("foreign_keys = ON")
   }
 
@@ -104,6 +123,26 @@ export class EyeDatabase {
     database.ensureProject()
 
     return database
+  }
+
+  static openExistingReadOnly = async ({
+    databasePath,
+    projectRoot,
+  }: {
+    databasePath: string
+    projectRoot: string
+  }) => {
+    try {
+      await access(databasePath)
+    } catch {
+      return undefined
+    }
+
+    return new EyeDatabase({
+      databasePath,
+      projectRoot,
+      readonly: true,
+    })
   }
 
   private resetSchema = () => {
@@ -169,31 +208,45 @@ export class EyeDatabase {
   }
 
   getProjectState = () =>
-    (this.connection
-      .prepare(
-        `
-          select
-            index_generation,
-            last_index_status,
-            last_index_started_at,
-            last_index_completed_at,
-            last_error
-          from projects
-          where project_root = ?
-        `,
-      )
-      .get(this.projectRoot) as
-      | {
-          index_generation: number
-          last_index_status: string
-          last_index_started_at?: string
-          last_index_completed_at?: string
-          last_error?: string
+    (() => {
+      const row = this.connection
+        .prepare(
+          `
+            select
+              index_generation,
+              last_index_status,
+              last_index_started_at,
+              last_index_completed_at,
+              last_error
+            from projects
+            where project_root = ?
+          `,
+        )
+        .get(this.projectRoot) as
+        | {
+            index_generation: number
+            last_index_status: string
+            last_index_started_at?: string | null
+            last_index_completed_at?: string | null
+            last_error?: string | null
+          }
+        | undefined
+
+      if (!row) {
+        return {
+          index_generation: 0,
+          last_index_status: "idle",
         }
-      | undefined) ?? {
-      index_generation: 0,
-      last_index_status: "idle",
-    }
+      }
+
+      return {
+        index_generation: row.index_generation,
+        last_index_status: row.last_index_status,
+        last_index_started_at: asOptional(row.last_index_started_at),
+        last_index_completed_at: asOptional(row.last_index_completed_at),
+        last_error: asOptional(row.last_error),
+      }
+    })()
 
   startIndexRun = () => {
     const projectState = this.getProjectState()
@@ -744,18 +797,18 @@ export class EyeDatabase {
     language: row.language,
     name: row.name,
     kind: row.kind as NormalizedSymbolRecord["kind"],
-    containerName: row.container_name,
+    containerName: asOptional(row.container_name),
     source: row.source as NormalizedSymbolRecord["source"],
     line: row.line,
     column: row.column_number,
-    endLine: row.end_line,
-    endColumn: row.end_column,
+    endLine: asOptional(row.end_line),
+    endColumn: asOptional(row.end_column),
   })
 
   toReferenceRecord = (row: ReferenceRow): NormalizedReferenceRecord => ({
     relativePath: row.relative_path,
     language: row.language,
-    symbolId: row.symbol_id,
+    symbolId: asOptional(row.symbol_id),
     name: row.name,
     context: row.context,
     source: row.source as NormalizedReferenceRecord["source"],
