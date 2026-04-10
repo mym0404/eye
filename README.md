@@ -11,9 +11,17 @@ Use `eye` when you want an agent to:
 
 - map the project structure before touching code
 - read source around an exact line
-- find symbol definitions
-- follow references from a stable symbol identifier
+- resolve a symbol once from an anchor, then reuse `symbolId`
+- follow references without broad text-search fanout
+- read bounded definition context instead of whole files
 - reuse a lazy local cache instead of re-doing expensive repo scans
+
+The project matters only if it does more than wrap `grep`. The current design aims to give agents a single symbol-query API that:
+
+- disambiguates which symbol the agent means
+- returns exact definition/reference candidates before large file reads
+- reuses project-local index state across repeated queries
+- keeps generated paths and cache state out of normal navigation
 
 ## What `eye` Does
 
@@ -21,8 +29,7 @@ Use `eye` when you want an agent to:
 | --- | --- |
 | `get_project_structure` | Returns a bounded tree and skips generated paths such as `build`, `dist`, `out`, `.eye`, and similar defaults. |
 | `read_source_range` | Reads a file around a requested line with numbered output. |
-| `find_symbol_definitions` | Uses lazy indexing, then prefers semantic resolution for TS/JS and Python, then falls back to indexed or ripgrep-backed candidates. |
-| `find_references` | Uses semantic references when possible, then supplements with indexed and ripgrep matches. |
+| `query_symbol` | One symbol-query surface for `definition`, `references`, and `context`. It accepts an `anchor`, `symbolId`, or plain `symbol`, prefers semantic resolution for TS/JS and Python, then falls back to indexed or ripgrep-backed candidates. |
 | `refresh_index` | Refreshes the `.eye` cache for the whole root or a narrowed scope. |
 | `get_index_status` | Reports generation, counts, and cache state. |
 
@@ -119,7 +126,7 @@ Many MCP-aware agents and SDKs accept a JSON stdio configuration shaped like thi
 
 1. Start with structure when the repo is unfamiliar.
 2. Read source before making claims about behavior.
-3. Use `symbolId` from definition results before asking for references.
+3. Use `query_symbol` with an `anchor` first, then reuse `symbolId`.
 4. Use `scopePath` when the repo is large and the target area is known.
 5. Call `refresh_index` when the repo changed or when you want a deterministic index pass before deeper navigation.
 
@@ -128,8 +135,8 @@ Many MCP-aware agents and SDKs accept a JSON stdio configuration shaped like thi
 Use prompts like:
 
 - `Use eye to inspect this repository before answering. Start with get_project_structure at depth 2, then read the relevant files before you summarize the architecture.`
-- `Find the definition of createProgram with eye, then follow references using symbolId and summarize the main call sites.`
-- `Use eye only inside packages/next/src/server. Refresh the index for that scope, then find definitions and references for loadConfig.`
+- `Use eye to inspect this repository before answering. Resolve createProgram with query_symbol from an anchor or symbol name, then follow references using symbolId and summarize the main call sites.`
+- `Use eye only inside packages/next/src/server. Refresh the index for that scope, then use query_symbol for definition and references of loadConfig.`
 - `Read the source around django/core/handlers/wsgi.py before explaining the request path. Do not answer from memory.`
 - `Use eye to map the repo, identify the ownership boundary for this feature, and list the exact files I should inspect next.`
 
@@ -143,20 +150,77 @@ Avoid vague prompts like:
 
 Those prompts force broad scans and make it harder for the agent to pick the right tool sequence.
 
+## `query_symbol` Patterns
+
+Resolve from the code you are currently looking at:
+
+```json
+{
+  "name": "query_symbol",
+  "arguments": {
+    "projectRoot": "/repo",
+    "target": {
+      "by": "anchor",
+      "filePath": "src/main.ts",
+      "line": 42,
+      "column": 17
+    },
+    "action": "definition"
+  }
+}
+```
+
+Then reuse the returned `symbolId`:
+
+```json
+{
+  "name": "query_symbol",
+  "arguments": {
+    "projectRoot": "/repo",
+    "target": {
+      "by": "symbolId",
+      "symbolId": "sym:typescript:src/utils/helper.ts:helper:1"
+    },
+    "action": "references",
+    "includeDeclaration": false
+  }
+}
+```
+
+Read bounded definition context without opening the whole file:
+
+```json
+{
+  "name": "query_symbol",
+  "arguments": {
+    "projectRoot": "/repo",
+    "target": {
+      "by": "symbolId",
+      "symbolId": "sym:typescript:src/utils/helper.ts:helper:1"
+    },
+    "action": "context",
+    "includeBody": true,
+    "before": 0,
+    "after": 0,
+    "maxLines": 80
+  }
+}
+```
+
 ## Recommended Agent Flow
 
 For a fresh repository, the most reliable sequence is:
 
 1. `get_project_structure`
 2. `read_source_range`
-3. `find_symbol_definitions`
-4. `find_references`
+3. `query_symbol` with `action: "definition"`
+4. `query_symbol` with `action: "references"` or `action: "context"`
 5. `get_index_status` or `refresh_index` when needed
 
 Two operational notes matter:
 
 - `get_project_structure`, `read_source_range`, and `get_index_status` are read-only.
-- `find_symbol_definitions`, `find_references`, and `refresh_index` may create or update the local `.eye/` cache.
+- `query_symbol` and `refresh_index` may create or update the local `.eye/` cache.
 
 ## `.eye/` Layout
 
@@ -187,6 +251,7 @@ Two operational notes matter:
 - Semantic coverage is currently limited to TS/JS and Python.
 - Indexing is lazy and query-triggered; there is no watch mode or background daemon.
 - Name-based lookups can still be ambiguous and may return multiple candidates.
+- `context` is bounded and optimized for agent navigation, not for dumping entire long definitions.
 - The structural index is tree-sitter based, but not yet a language-complete semantic graph.
 - The committed fixtures are small integration corpora, not the final large OSS snapshots.
 

@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from "vitest"
 
 import { refreshProjectIndex } from "../src/indexing/indexer.js"
 import { loadProjectContext } from "../src/project/context.js"
-import { findSymbolDefinitions } from "../src/query/definitions.js"
+import { querySymbol } from "../src/query/symbol.js"
 import { EyeDatabase } from "../src/storage/database.js"
 import { createTempFixtureProject } from "./helpers/project.js"
 
@@ -63,27 +63,35 @@ describe("index lifecycle", () => {
         database,
       })
 
-      const firstDefinition = await findSymbolDefinitions({
+      const firstDefinition = await querySymbol({
         context,
         database,
-        symbol: "helper",
+        target: {
+          by: "symbol",
+          symbol: "helper",
+        },
+        action: "definition",
         maxResults: 10,
       })
       const secondRefresh = await refreshProjectIndex({
         context,
         database,
       })
-      const secondDefinition = await findSymbolDefinitions({
+      const secondDefinition = await querySymbol({
         context,
         database,
-        symbol: "helper",
+        target: {
+          by: "symbol",
+          symbol: "helper",
+        },
+        action: "definition",
         maxResults: 10,
       })
 
-      expect(firstDefinition.candidates[0]?.symbolId).toBeTruthy()
+      expect(firstDefinition.matches[0]?.symbolId).toBeTruthy()
       expect(secondRefresh.changedFiles).toBe(0)
-      expect(firstDefinition.candidates[0]?.symbolId).toBe(
-        secondDefinition.candidates[0]?.symbolId,
+      expect(firstDefinition.matches[0]?.symbolId).toBe(
+        secondDefinition.matches[0]?.symbolId,
       )
     } finally {
       database.close()

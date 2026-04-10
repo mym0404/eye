@@ -8,6 +8,8 @@ export const realFixtures = {
     name: "typescript",
     projectRoot: path.join(repoRoot, "tests", "fixtures", "real", "typescript"),
     structurePath: "src",
+    indexScopePath: "src/compiler/program.ts",
+    minIndexedFiles: 1,
     source: {
       filePath: "src/compiler/program.ts",
       line: 1515,
@@ -23,6 +25,8 @@ export const realFixtures = {
     name: "nextjs",
     projectRoot: path.join(repoRoot, "tests", "fixtures", "real", "nextjs"),
     structurePath: "packages",
+    indexScopePath: "packages/next/src/server",
+    minIndexedFiles: 20,
     source: {
       filePath: "packages/next/src/server/config.ts",
       line: 1602,
@@ -33,6 +37,8 @@ export const realFixtures = {
     name: "flask",
     projectRoot: path.join(repoRoot, "tests", "fixtures", "real", "flask"),
     structurePath: "src",
+    indexScopePath: "src",
+    minIndexedFiles: 20,
     source: {
       filePath: "src/flask/app.py",
       line: 109,
@@ -48,6 +54,8 @@ export const realFixtures = {
     name: "django",
     projectRoot: path.join(repoRoot, "tests", "fixtures", "real", "django"),
     structurePath: "django",
+    indexScopePath: "django/core/handlers",
+    minIndexedFiles: 5,
     source: {
       filePath: "django/core/handlers/wsgi.py",
       line: 113,

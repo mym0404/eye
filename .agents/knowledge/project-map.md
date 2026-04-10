@@ -7,7 +7,7 @@
 - `src/project/`: project-root resolution, ignore policy, `.eye` layout.
 - `src/indexing/`: discovery, change detection, parsing, symbol/reference extraction.
 - `src/lang/`: semantic adapters and parser integrations.
-- `src/query/`: structure, source, definition, reference, and status queries.
+- `src/query/`: structure, source, unified symbol query, lower-level navigation helpers, and status queries.
 - `src/storage/`: SQLite schema, DB access, blob storage.
 - `src/fallback/`: ripgrep and heuristic fallback paths.
 - `src/scripts/`: doctor, knowledge sync, document validation.
@@ -19,7 +19,8 @@
 ## Query Ownership
 
 - Structure and source reads live in `src/query/structure.ts` and `src/query/source.ts`.
-- Index-backed navigation lives in `src/query/definitions.ts` and `src/query/references.ts`.
+- `src/query/symbol.ts` owns the agent-facing `query_symbol` contract and context assembly.
+- `src/query/definitions.ts` and `src/query/references.ts` remain lower-level resolution helpers used by `src/query/symbol.ts`.
 - Index lifecycle starts in `src/indexing/indexer.ts`.
 - MCP tool exposure lives in `src/mcp/server.ts`.
 

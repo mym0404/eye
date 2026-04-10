@@ -46,8 +46,7 @@ describe("MCP server E2E", () => {
       expect.arrayContaining([
         "get_project_structure",
         "read_source_range",
-        "find_symbol_definitions",
-        "find_references",
+        "query_symbol",
         "refresh_index",
         "get_index_status",
       ]),
@@ -66,16 +65,16 @@ describe("MCP server E2E", () => {
     await client.initialize()
 
     const result = await client.callToolRaw({
-      name: "find_symbol_definitions",
+      name: "read_source_range",
       args: {
         projectRoot: fixture.projectRoot,
+        filePath: "missing.ts",
+        line: 1,
       },
     })
 
     expect(result.isError).toBe(true)
-    expect(result.content[0]?.text).toContain(
-      "Provide one of symbolId, symbol, or anchor.",
-    )
+    expect(result.content[0]?.text).toContain("missing.ts")
   })
 
   it("reads structure and source ranges through MCP tools", async () => {
@@ -174,27 +173,27 @@ describe("MCP server E2E", () => {
     expect(await pathExists(eyeDir)).toBe(false)
 
     const definitions = await client.callTool({
-      name: "find_symbol_definitions",
+      name: "query_symbol",
       args: {
         projectRoot: fixture.projectRoot,
-        anchor: {
+        target: {
+          by: "anchor",
           filePath: "src/main.ts",
           line: 5,
           column: 15,
         },
+        action: "definition",
         maxResults: 10,
       },
     })
     const definitionContent = definitions.structuredContent as {
-      candidates: Array<{
+      matches: Array<{
         filePath: string
       }>
     }
 
     expect(await pathExists(eyeDir)).toBe(true)
-    expect(definitionContent.candidates[0]?.filePath).toBe(
-      "src/utils/helper.ts",
-    )
+    expect(definitionContent.matches[0]?.filePath).toBe("src/utils/helper.ts")
   })
 
   it("refreshes index, reports status, and resolves TS definitions/references", async () => {
@@ -257,20 +256,22 @@ describe("MCP server E2E", () => {
     expect(statusContent.referenceCount).toBeGreaterThan(0)
 
     const definitions = await client.callTool({
-      name: "find_symbol_definitions",
+      name: "query_symbol",
       args: {
         projectRoot: fixture.projectRoot,
-        anchor: {
+        target: {
+          by: "anchor",
           filePath: "src/main.ts",
           line: 5,
           column: 15,
         },
+        action: "definition",
         maxResults: 10,
       },
     })
     const definitionContent = definitions.structuredContent as {
       strategy: string
-      candidates: Array<{
+      matches: Array<{
         filePath: string
         name?: string
         symbolId?: string
@@ -278,33 +279,71 @@ describe("MCP server E2E", () => {
     }
 
     expect(definitionContent.strategy).toBe("semantic")
-    expect(definitionContent.candidates[0]?.filePath).toBe(
-      "src/utils/helper.ts",
-    )
-    expect(definitionContent.candidates[0]?.name).toBe("helper")
+    expect(definitionContent.matches[0]?.filePath).toBe("src/utils/helper.ts")
+    expect(definitionContent.matches[0]?.name).toBe("helper")
+    const tsSymbolId = definitionContent.matches[0]?.symbolId
+
+    expect(tsSymbolId).toBeTruthy()
 
     const references = await client.callTool({
-      name: "find_references",
+      name: "query_symbol",
       args: {
         projectRoot: fixture.projectRoot,
-        symbolId: definitionContent.candidates[0]?.symbolId,
+        target: {
+          by: "symbolId",
+          symbolId: tsSymbolId ?? "",
+        },
+        action: "references",
         maxResults: 20,
         includeDeclaration: false,
       },
     })
     const referenceContent = references.structuredContent as {
       strategy: string
-      candidates: Array<{
+      matches: Array<{
         filePath: string
       }>
     }
 
     expect(referenceContent.strategy).toBe("semantic")
     expect(
-      referenceContent.candidates.some(
+      referenceContent.matches.some(
         (candidate) => candidate.filePath === "src/main.ts",
       ),
     ).toBe(true)
+
+    const contextResult = await client.callTool({
+      name: "query_symbol",
+      args: {
+        projectRoot: fixture.projectRoot,
+        target: {
+          by: "symbolId",
+          symbolId: tsSymbolId ?? "",
+        },
+        action: "context",
+        includeBody: true,
+        before: 0,
+        after: 0,
+        maxLines: 20,
+      },
+    })
+    const contextContent = contextResult.structuredContent as {
+      matches: Array<{
+        filePath: string
+      }>
+      context?: {
+        bodyAvailable: boolean
+        signatureLine?: {
+          text: string
+        }
+      }
+    }
+
+    expect(contextContent.matches[0]?.filePath).toBe("src/utils/helper.ts")
+    expect(contextContent.context?.bodyAvailable).toBe(true)
+    expect(contextContent.context?.signatureLine?.text).toContain(
+      "export const helper",
+    )
   })
 
   it("resolves Python definitions and references through MCP tools", async () => {
@@ -319,20 +358,22 @@ describe("MCP server E2E", () => {
     await client.initialize()
 
     const definitions = await client.callTool({
-      name: "find_symbol_definitions",
+      name: "query_symbol",
       args: {
         projectRoot: fixture.projectRoot,
-        anchor: {
+        target: {
+          by: "anchor",
           filePath: "app/main.py",
           line: 7,
           column: 12,
         },
+        action: "definition",
         maxResults: 10,
       },
     })
     const definitionContent = definitions.structuredContent as {
       strategy: string
-      candidates: Array<{
+      matches: Array<{
         filePath: string
         name?: string
         symbolId?: string
@@ -340,28 +381,35 @@ describe("MCP server E2E", () => {
     }
 
     expect(definitionContent.strategy).toBe("semantic")
-    expect(definitionContent.candidates[0]?.filePath).toBe("app/helpers.py")
-    expect(definitionContent.candidates[0]?.name).toBe("greet")
+    expect(definitionContent.matches[0]?.filePath).toBe("app/helpers.py")
+    expect(definitionContent.matches[0]?.name).toBe("greet")
+    const pythonSymbolId = definitionContent.matches[0]?.symbolId
+
+    expect(pythonSymbolId).toBeTruthy()
 
     const references = await client.callTool({
-      name: "find_references",
+      name: "query_symbol",
       args: {
         projectRoot: fixture.projectRoot,
-        symbolId: definitionContent.candidates[0]?.symbolId,
+        target: {
+          by: "symbolId",
+          symbolId: pythonSymbolId ?? "",
+        },
+        action: "references",
         maxResults: 20,
         includeDeclaration: false,
       },
     })
     const referenceContent = references.structuredContent as {
       strategy: string
-      candidates: Array<{
+      matches: Array<{
         filePath: string
       }>
     }
 
     expect(referenceContent.strategy).toBe("semantic")
     expect(
-      referenceContent.candidates.some(
+      referenceContent.matches.some(
         (candidate) => candidate.filePath === "app/main.py",
       ),
     ).toBe(true)
@@ -437,21 +485,25 @@ describe("MCP server E2E", () => {
     })
 
     const initialDefinitions = await client.callTool({
-      name: "find_symbol_definitions",
+      name: "query_symbol",
       args: {
         projectRoot: fixture.projectRoot,
-        symbol: "helper",
+        target: {
+          by: "symbol",
+          symbol: "helper",
+        },
+        action: "definition",
         maxResults: 10,
       },
     })
     const initialContent = initialDefinitions.structuredContent as {
-      candidates: Array<{
+      matches: Array<{
         filePath: string
       }>
     }
 
     expect(
-      initialContent.candidates.some(
+      initialContent.matches.some(
         (candidate) => candidate.filePath === "src/extra/helper.ts",
       ),
     ).toBe(false)
@@ -472,21 +524,25 @@ describe("MCP server E2E", () => {
     })
 
     const updatedDefinitions = await client.callTool({
-      name: "find_symbol_definitions",
+      name: "query_symbol",
       args: {
         projectRoot: fixture.projectRoot,
-        symbol: "helper",
+        target: {
+          by: "symbol",
+          symbol: "helper",
+        },
+        action: "definition",
         maxResults: 10,
       },
     })
     const updatedContent = updatedDefinitions.structuredContent as {
-      candidates: Array<{
+      matches: Array<{
         filePath: string
       }>
     }
 
     expect(
-      updatedContent.candidates.some(
+      updatedContent.matches.some(
         (candidate) => candidate.filePath === "src/extra/helper.ts",
       ),
     ).toBe(true)
@@ -524,45 +580,54 @@ describe("MCP server E2E", () => {
     await client.initialize()
 
     const definitions = await client.callTool({
-      name: "find_symbol_definitions",
+      name: "query_symbol",
       args: {
         projectRoot: fixture.projectRoot,
-        anchor: {
+        target: {
+          by: "anchor",
           filePath: "src/main.ts",
           line: 5,
           column: 15,
         },
+        action: "definition",
         maxResults: 10,
       },
     })
     const definitionContent = definitions.structuredContent as {
-      candidates: Array<{
+      matches: Array<{
         symbolId?: string
       }>
     }
+    const symbolId = definitionContent.matches[0]?.symbolId
+
+    expect(symbolId).toBeTruthy()
 
     const references = await client.callTool({
-      name: "find_references",
+      name: "query_symbol",
       args: {
         projectRoot: fixture.projectRoot,
-        symbolId: definitionContent.candidates[0]?.symbolId,
+        target: {
+          by: "symbolId",
+          symbolId: symbolId ?? "",
+        },
+        action: "references",
         maxResults: 20,
         includeDeclaration: false,
       },
     })
     const referenceContent = references.structuredContent as {
-      candidates: Array<{
+      matches: Array<{
         filePath: string
       }>
     }
 
     expect(
-      referenceContent.candidates.some(
+      referenceContent.matches.some(
         (candidate) => candidate.filePath === "src/main.ts",
       ),
     ).toBe(true)
     expect(
-      referenceContent.candidates.some((candidate) =>
+      referenceContent.matches.some((candidate) =>
         ["build/", "dist/", "out/"].some((prefix) =>
           candidate.filePath.startsWith(prefix),
         ),
@@ -590,48 +655,56 @@ describe("MCP server E2E", () => {
     await client.initialize()
 
     const unscoped = await client.callTool({
-      name: "find_symbol_definitions",
+      name: "query_symbol",
       args: {
         projectRoot: fixture.projectRoot,
-        symbol: "helper",
+        target: {
+          by: "symbol",
+          symbol: "helper",
+        },
+        action: "definition",
         maxResults: 10,
       },
     })
     const unscopedContent = unscoped.structuredContent as {
-      candidates: Array<{
+      matches: Array<{
         filePath: string
       }>
     }
 
     expect(
-      unscopedContent.candidates.some(
+      unscopedContent.matches.some(
         (candidate) => candidate.filePath === "src/utils/helper.ts",
       ),
     ).toBe(true)
     expect(
-      unscopedContent.candidates.some(
+      unscopedContent.matches.some(
         (candidate) => candidate.filePath === "src/extra/helper.ts",
       ),
     ).toBe(true)
 
     const scoped = await client.callTool({
-      name: "find_symbol_definitions",
+      name: "query_symbol",
       args: {
         projectRoot: fixture.projectRoot,
-        symbol: "helper",
+        target: {
+          by: "symbol",
+          symbol: "helper",
+        },
+        action: "definition",
         scopePath: "src/utils",
         maxResults: 10,
       },
     })
     const scopedContent = scoped.structuredContent as {
-      candidates: Array<{
+      matches: Array<{
         filePath: string
       }>
     }
 
-    expect(scopedContent.candidates.length).toBeGreaterThan(0)
+    expect(scopedContent.matches.length).toBeGreaterThan(0)
     expect(
-      scopedContent.candidates.every(
+      scopedContent.matches.every(
         (candidate) => candidate.filePath === "src/utils/helper.ts",
       ),
     ).toBe(true)

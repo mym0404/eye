@@ -70,8 +70,7 @@ const main = async () => {
     "dependencies",
     "dirty_files",
     "get_project_structure",
-    "find_symbol_definitions",
-    "find_references",
+    "query_symbol",
   ]
   const missingBusinessTerms = requiredBusinessTerms.filter(
     (entry) => !businessLogic.includes(entry),

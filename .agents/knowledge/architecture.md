@@ -3,11 +3,10 @@
 ## Top-Down Flow
 
 1. `src/index.ts` boots the stdio MCP server.
-2. `createEyeServer` in `src/mcp/server.ts` registers six tools:
+2. `createEyeServer` in `src/mcp/server.ts` registers five tools:
    - `get_project_structure`
    - `read_source_range`
-   - `find_symbol_definitions`
-   - `find_references`
+   - `query_symbol`
    - `refresh_index`
    - `get_index_status`
 3. Read-only structure/source paths resolve project context without forcing `.eye` runtime creation.
@@ -15,8 +14,11 @@
    - resolves the project root
    - ensures `.eye/` runtime layout exists
    - opens `EyeDatabase`
-5. Definition/reference queries call `refreshProjectIndex` lazily before answering.
-6. Query resolution then prefers semantic backends, then indexed rows, then ripgrep fallback.
+5. `query_symbol` calls `refreshProjectIndex` lazily before answering.
+6. `query_symbol` then branches by action:
+   - `definition`: semantic lookup -> indexed rows -> heuristic fallback
+   - `references`: semantic lookup -> indexed rows -> ripgrep fallback
+   - `context`: resolve definitions first, then read a bounded snippet around the best definition
 7. The real MCP runtime path is enforced by `tests/mcp-server.e2e.ts`, which speaks stdio MCP over newline-delimited JSON.
 
 ## Direct Read Path
@@ -27,7 +29,7 @@
 ## Index-Backed Path
 
 - `refresh_index` explicitly refreshes the project-local `.eye` cache.
-- `find_symbol_definitions` and `find_references` also refresh lazily.
+- `query_symbol` also refreshes lazily.
 - `get_index_status` reads the current DB-backed status summary.
 
 ## Semantic Adapters

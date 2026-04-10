@@ -2,8 +2,7 @@ import { afterEach, describe, expect, it } from "vitest"
 
 import { refreshProjectIndex } from "../src/indexing/indexer.js"
 import { loadProjectContext } from "../src/project/context.js"
-import { findSymbolDefinitions } from "../src/query/definitions.js"
-import { findReferences } from "../src/query/references.js"
+import { querySymbol } from "../src/query/symbol.js"
 import { EyeDatabase } from "../src/storage/database.js"
 import { createTempFixtureProject } from "./helpers/project.js"
 
@@ -36,20 +35,22 @@ describe("TypeScript navigation", () => {
         database,
       })
 
-      const output = await findSymbolDefinitions({
+      const output = await querySymbol({
         context,
         database,
-        anchor: {
+        target: {
+          by: "anchor",
           filePath: "src/main.ts",
           line: 5,
           column: 15,
         },
+        action: "definition",
         maxResults: 10,
       })
 
       expect(output.strategy).toBe("semantic")
-      expect(output.candidates[0]?.filePath).toBe("src/utils/helper.ts")
-      expect(output.candidates[0]?.name).toBe("helper")
+      expect(output.matches[0]?.filePath).toBe("src/utils/helper.ts")
+      expect(output.matches[0]?.name).toBe("helper")
     } finally {
       database.close()
     }
@@ -73,28 +74,84 @@ describe("TypeScript navigation", () => {
         database,
       })
 
-      const definition = await findSymbolDefinitions({
+      const definition = await querySymbol({
         context,
         database,
-        symbol: "helper",
+        target: {
+          by: "symbol",
+          symbol: "helper",
+        },
+        action: "definition",
         maxResults: 10,
       })
-      const symbolId = definition.candidates[0]?.symbolId
+      const symbolId = definition.matches[0]?.symbolId
 
       expect(symbolId).toBeTruthy()
 
-      const references = await findReferences({
+      const references = await querySymbol({
         context,
         database,
-        symbolId,
+        target: {
+          by: "symbolId",
+          symbolId: symbolId ?? "",
+        },
+        action: "references",
         maxResults: 20,
         includeDeclaration: false,
       })
 
       expect(
-        references.candidates.some(
+        references.matches.some(
           (candidate) => candidate.filePath === "src/main.ts",
         ),
+      ).toBe(true)
+    } finally {
+      database.close()
+    }
+  })
+
+  it("returns bounded context for the resolved definition", async () => {
+    const fixture = await createTempFixtureProject("ts-app")
+    cleanups.push(fixture.cleanup)
+
+    const context = await loadProjectContext({
+      projectRoot: fixture.projectRoot,
+    })
+    const database = await EyeDatabase.open({
+      databasePath: context.paths.cacheDbPath,
+      projectRoot: context.projectRoot,
+    })
+
+    try {
+      await refreshProjectIndex({
+        context,
+        database,
+      })
+
+      const output = await querySymbol({
+        context,
+        database,
+        target: {
+          by: "anchor",
+          filePath: "src/main.ts",
+          line: 5,
+          column: 15,
+        },
+        action: "context",
+        maxResults: 10,
+        includeBody: true,
+        before: 0,
+        after: 0,
+        maxLines: 20,
+      })
+
+      expect(output.matches[0]?.filePath).toBe("src/utils/helper.ts")
+      expect(output.context?.bodyAvailable).toBe(true)
+      expect(output.context?.signatureLine?.text).toContain(
+        "export const helper",
+      )
+      expect(
+        output.context?.lines.some((line) => line.text.includes("helper")),
       ).toBe(true)
     } finally {
       database.close()

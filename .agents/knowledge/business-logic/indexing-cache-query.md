@@ -4,8 +4,10 @@
 
 - `get_project_structure`: filesystem walk only, no `EyeDatabase`, no forced `.eye` runtime.
 - `read_source_range`: direct file read only, no index.
-- `find_symbol_definitions`: `withDatabase` -> `refreshProjectIndex` -> semantic lookup -> indexed lookup -> fallback candidates.
-- `find_references`: `withDatabase` -> `refreshProjectIndex` -> semantic lookup -> indexed lookup -> `searchWithRipgrep`.
+- `query_symbol`:
+  - `action: definition` -> `withDatabase` -> `refreshProjectIndex` -> semantic lookup -> indexed lookup -> fallback candidates.
+  - `action: references` -> `withDatabase` -> `refreshProjectIndex` -> semantic lookup -> indexed lookup -> `searchWithRipgrep`.
+  - `action: context` -> `withDatabase` -> `refreshProjectIndex` -> resolve definitions -> bounded source read around the best definition.
 - `refresh_index`: `withDatabase` -> `refreshProjectIndex`.
 - `get_index_status`: `withDatabase` -> `EyeDatabase.getIndexStatus()`.
 
@@ -53,18 +55,34 @@
 
 ## Query Strategy
 
-### Definitions
+### Unified Symbol Query
+
+- `query_symbol` accepts three target forms:
+  - `anchor`
+  - `symbolId`
+  - plain `symbol`
+- `anchor` is a source location the agent is currently looking at, not necessarily a definition location.
+- `symbolId` is the preferred exact follow-up target after the first successful resolve.
+
+### Definition Action
 
 - Anchor-based TS/JS lookups call the TypeScript language service.
 - Anchor-based Python lookups call Pyright.
 - When semantic lookup fails or the user provides a plain symbol, query `symbols` by name.
 - When confidence is still low, use heuristic candidates.
 
-### References
+### References Action
 
 - Anchor or `symbolId` lookups prefer semantic references from TS/JS or Python backends.
 - Indexed references come from `references_idx`.
 - Remaining budget is filled by ripgrep text matches.
+
+### Context Action
+
+- `context` first resolves definition candidates with the same logic as `definition`.
+- The best candidate becomes the canonical context location.
+- The response then includes a bounded numbered snippet, signature line when available, and body range metadata when the definition span is known.
+- Fallback-only context stays honest: it may return a definition match with no body range.
 
 ## Stable Identity
 
@@ -75,6 +93,7 @@
 
 - `src/indexing/indexer.ts`
 - `src/indexing/parser.ts`
+- `src/query/symbol.ts`
 - `src/query/definitions.ts`
 - `src/query/references.ts`
 - `src/storage/schema.ts`
