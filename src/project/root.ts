@@ -1,13 +1,22 @@
-import { realpath, stat } from "node:fs/promises"
+import { stat } from "node:fs/promises"
 import path from "node:path"
+
+import {
+  isWithinPath,
+  resolveExistingDirectory,
+  resolveExistingPath,
+  toProjectRelativePath,
+} from "../util/path.js"
 
 const alwaysIgnoredNames = new Set([
   ".git",
   ".worktrees",
   "node_modules",
-  "dist",
+  ".eye",
   "build",
   "coverage",
+  "dist",
+  "out",
   ".next",
   ".turbo",
   ".cache",
@@ -19,36 +28,15 @@ const splitConfiguredRoots = (value: string | undefined) =>
     .map((item) => item.trim())
     .filter(Boolean) ?? []
 
-const isWithinPath = ({
-  parent,
-  child,
-}: {
-  parent: string
-  child: string
-}) => {
-  const relativePath = path.relative(parent, child)
-
-  return relativePath === "" || (!relativePath.startsWith("..") && !path.isAbsolute(relativePath))
-}
-
-const resolveExistingPath = async (targetPath: string) => {
-  const resolvedPath = await realpath(targetPath)
-
-  await stat(resolvedPath)
-
-  return resolvedPath
-}
-
-const toPosixPath = (value: string) => value.split(path.sep).join("/")
-
 const getAllowedRoots = async () => {
-  const roots = splitConfiguredRoots(process.env.EYE_ALLOWED_ROOTS)
-
-  const resolvedRoots = await Promise.all(
-    roots.map(async (root) => resolveExistingPath(root).catch(() => undefined)),
+  const configuredRoots = splitConfiguredRoots(process.env.EYE_ALLOWED_ROOTS)
+  const roots = await Promise.all(
+    configuredRoots.map(async (candidate) =>
+      resolveExistingDirectory(candidate).catch(() => undefined),
+    ),
   )
 
-  return resolvedRoots.filter((root): root is string => root !== undefined)
+  return roots.filter((value): value is string => value !== undefined)
 }
 
 export const shouldSkipName = ({
@@ -69,18 +57,6 @@ export const shouldSkipName = ({
   return false
 }
 
-export const toRelativeProjectPath = ({
-  projectRoot,
-  targetPath,
-}: {
-  projectRoot: string
-  targetPath: string
-}) => {
-  const relativePath = path.relative(projectRoot, targetPath)
-
-  return relativePath === "" ? "." : toPosixPath(relativePath)
-}
-
 export const resolveProjectRoot = async ({
   projectRoot,
 }: {
@@ -94,18 +70,14 @@ export const resolveProjectRoot = async ({
     )
   }
 
-  const resolvedRoot = await resolveExistingPath(rawRoot)
-  const rootInfo = await stat(resolvedRoot)
-
-  if (!rootInfo.isDirectory()) {
-    throw new Error(`projectRoot is not a directory: ${resolvedRoot}`)
-  }
-
+  const resolvedRoot = await resolveExistingDirectory(rawRoot)
   const allowedRoots = await getAllowedRoots()
 
   if (
     allowedRoots.length > 0 &&
-    !allowedRoots.some((allowedRoot) => isWithinPath({ parent: allowedRoot, child: resolvedRoot }))
+    !allowedRoots.some((allowedRoot) =>
+      isWithinPath({ parent: allowedRoot, child: resolvedRoot }),
+    )
   ) {
     throw new Error(
       `projectRoot is outside EYE_ALLOWED_ROOTS: ${resolvedRoot}. Allowed roots: ${allowedRoots.join(", ")}`,
@@ -127,22 +99,24 @@ export const resolveProjectPath = async ({
   const absolutePath = path.isAbsolute(targetPath)
     ? targetPath
     : path.join(projectRoot, targetPath)
-
   const resolvedPath = await resolveExistingPath(absolutePath)
 
   if (!isWithinPath({ parent: projectRoot, child: resolvedPath })) {
     throw new Error(`path is outside projectRoot: ${targetPath}`)
   }
 
-  const pathInfo = await stat(resolvedPath)
+  const info = await stat(resolvedPath)
 
-  if (!allowDirectory && !pathInfo.isFile()) {
+  if (!allowDirectory && !info.isFile()) {
     throw new Error(`path is not a file: ${targetPath}`)
   }
 
   return {
     absolutePath: resolvedPath,
-    relativePath: toRelativeProjectPath({ projectRoot, targetPath: resolvedPath }),
-    isDirectory: pathInfo.isDirectory(),
+    relativePath: toProjectRelativePath({
+      projectRoot,
+      targetPath: resolvedPath,
+    }),
+    isDirectory: info.isDirectory(),
   }
 }

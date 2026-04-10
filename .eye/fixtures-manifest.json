@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "fixtures": [
+    {
+      "name": "ts-app",
+      "path": "tests/fixtures/projects/ts-app",
+      "languages": ["typescript"],
+      "tier": "ci-mini",
+      "status": "committed"
+    },
+    {
+      "name": "js-app",
+      "path": "tests/fixtures/projects/js-app",
+      "languages": ["javascript"],
+      "tier": "ci-mini",
+      "status": "committed"
+    },
+    {
+      "name": "python-app",
+      "path": "tests/fixtures/projects/python-app",
+      "languages": ["python"],
+      "tier": "ci-mini",
+      "status": "committed"
+    },
+    {
+      "name": "mixed-app",
+      "path": "tests/fixtures/projects/mixed-app",
+      "languages": ["typescript", "python"],
+      "tier": "ci-mini",
+      "status": "committed"
+    }
+  ],
+  "plannedLargeFixtures": [
+    {
+      "name": "babel-snapshot",
+      "upstream": "babel/babel",
+      "languages": ["javascript", "typescript"],
+      "targetMinimum": {
+        "files": 50,
+        "lines": 50000
+      },
+      "status": "planned"
+    },
+    {
+      "name": "typescript-eslint-snapshot",
+      "upstream": "typescript-eslint/typescript-eslint",
+      "languages": ["javascript", "typescript"],
+      "targetMinimum": {
+        "files": 50,
+        "lines": 50000
+      },
+      "status": "planned"
+    },
+    {
+      "name": "django-snapshot",
+      "upstream": "django/django",
+      "languages": ["python"],
+      "targetMinimum": {
+        "files": 50,
+        "lines": 50000
+      },
+      "status": "planned"
+    },
+    {
+      "name": "pydantic-snapshot",
+      "upstream": "pydantic/pydantic",
+      "languages": ["python"],
+      "targetMinimum": {
+        "files": 50,
+        "lines": 50000
+      },
+      "status": "planned"
+    }
+  ]
+}

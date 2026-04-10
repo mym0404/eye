@@ -1,13 +1,14 @@
 import { readFile } from "node:fs/promises"
 
-import { resolveProjectPath } from "./config.js"
+import { resolveProjectPath } from "../project/root.js"
 
 export type SourceLine = {
   number: number
   text: string
 }
 
-const splitLines = (value: string) => (value.length === 0 ? [] : value.split(/\r?\n/u))
+const splitLines = (value: string) =>
+  value.length === 0 ? [] : value.split(/\r?\n/u)
 
 const getWindow = ({
   line,
@@ -35,7 +36,7 @@ const getWindow = ({
   }
 
   let startLine = Math.max(1, line - Math.floor((maxLines - 1) / 2))
-  let endLine = Math.min(totalLines, startLine + maxLines - 1)
+  const endLine = Math.min(totalLines, startLine + maxLines - 1)
 
   startLine = Math.max(1, endLine - maxLines + 1)
 
@@ -61,11 +62,16 @@ export const readSourceRange = async ({
   after: number
   maxLines: number
 }) => {
-  const resolvedFile = await resolveProjectPath({ projectRoot, targetPath: filePath })
+  const resolvedFile = await resolveProjectPath({
+    projectRoot,
+    targetPath: filePath,
+  })
   const buffer = await readFile(resolvedFile.absolutePath)
 
   if (buffer.includes(0)) {
-    throw new Error(`binary files are not supported: ${resolvedFile.relativePath}`)
+    throw new Error(
+      `binary files are not supported: ${resolvedFile.relativePath}`,
+    )
   }
 
   const lineTexts = splitLines(buffer.toString("utf8"))
@@ -138,7 +144,10 @@ export const formatSourceRange = ({
 
   const lineNumberWidth = String(endLine).length
   const body = lines
-    .map(({ number, text }) => `${String(number).padStart(lineNumberWidth)} | ${text}`)
+    .map(
+      ({ number, text }) =>
+        `${String(number).padStart(lineNumberWidth)} | ${text}`,
+    )
     .join("\n")
 
   return `${header}\n${body}`

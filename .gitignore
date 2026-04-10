@@ -1,3 +1,10 @@
 node_modules
 dist
 *.tsbuildinfo
+.coverage
+coverage
+.eye/cache.db
+.eye/runtime.json
+.eye/blobs
+.eye/tmp
+.eye/logs

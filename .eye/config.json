@@ -1,0 +1,10 @@
+{
+  "ignore": {
+    "generatedPaths": ["build/**", "dist/**", "out/**", ".eye/**"],
+    "additionalPaths": []
+  },
+  "indexing": {
+    "workerConcurrency": 4,
+    "includeHidden": true
+  }
+}

@@ -2,7 +2,9 @@ import type { Dirent } from "node:fs"
 import { readdir } from "node:fs/promises"
 import path from "node:path"
 
-import { shouldSkipName, toRelativeProjectPath } from "./config.js"
+import type { EyeProjectContext } from "../project/context.js"
+import { shouldSkipName } from "../project/root.js"
+import { toProjectRelativePath } from "../util/path.js"
 
 export type TreeEntry = {
   name: string
@@ -24,13 +26,13 @@ const sortDirents = (left: Dirent, right: Dirent) => {
 }
 
 export const getProjectStructure = async ({
-  projectRoot,
+  context,
   depth,
   maxEntries,
   includeFiles,
   includeHidden,
 }: {
-  projectRoot: string
+  context: EyeProjectContext
   depth: number
   maxEntries: number
   includeFiles: boolean
@@ -52,7 +54,13 @@ export const getProjectStructure = async ({
 
     const dirents = await readdir(absoluteDir, { withFileTypes: true })
     const visibleDirents = dirents
-      .filter((dirent) => !shouldSkipName({ name: dirent.name, includeHidden }))
+      .filter(
+        (dirent) =>
+          !shouldSkipName({
+            name: dirent.name,
+            includeHidden,
+          }),
+      )
       .sort(sortDirents)
 
     const entries: TreeEntry[] = []
@@ -64,7 +72,14 @@ export const getProjectStructure = async ({
       }
 
       const absolutePath = path.join(absoluteDir, dirent.name)
-      const relativePath = toRelativeProjectPath({ projectRoot, targetPath: absolutePath })
+      const relativePath = toProjectRelativePath({
+        projectRoot: context.projectRoot,
+        targetPath: absolutePath,
+      })
+
+      if (context.shouldIgnorePath(relativePath)) {
+        continue
+      }
 
       if (dirent.isDirectory()) {
         totalEntries += 1
@@ -105,10 +120,13 @@ export const getProjectStructure = async ({
     return entries
   }
 
-  const entries = await walk({ absoluteDir: projectRoot, remainingDepth: depth })
+  const entries = await walk({
+    absoluteDir: context.projectRoot,
+    remainingDepth: depth,
+  })
 
   return {
-    projectRoot,
+    projectRoot: context.projectRoot,
     depth,
     maxEntries,
     totalEntries,
@@ -136,7 +154,11 @@ export const formatProjectStructure = ({
   const appendEntries = (nodes: TreeEntry[], indent: string) => {
     for (const node of nodes) {
       const prefix =
-        node.kind === "directory" ? "dir " : node.kind === "symlink" ? "ln  " : "file"
+        node.kind === "directory"
+          ? "dir "
+          : node.kind === "symlink"
+            ? "ln  "
+            : "file"
 
       lines.push(`${indent}${prefix} ${node.name}`)
 

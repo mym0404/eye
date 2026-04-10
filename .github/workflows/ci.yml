@@ -1,0 +1,54 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25
+          cache: npm
+
+      - name: Install
+        run: npm ci --silent
+
+      - name: Doctor
+        run: npm run doctor --silent
+
+      - name: Lint
+        run: npm run lint --silent
+
+      - name: Typecheck
+        run: npm run typecheck --silent
+
+      - name: Test
+        run: npm run test --silent
+
+      - name: Coverage
+        run: npm run test:coverage --silent
+
+      - name: Upload Coverage Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage
+
+      - name: Upload Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./coverage/lcov.info
+          fail_ci_if_error: false
+          verbose: false
+

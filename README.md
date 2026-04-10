@@ -1,59 +1,84 @@
 # eye
 
-`eye` is a TypeScript MCP server for source-code browsing in large repositories. The current MVP is intentionally small: it gives an MCP client bounded project structure listing, source reading around a line, symbol definition lookup through a pluggable provider layer, and reference search backed by `ripgrep`.
+[![codecov](https://codecov.io/gh/mym0404/eye/branch/main/graph/badge.svg)](https://codecov.io/gh/mym0404/eye)
 
-## Current MVP
+`eye` is a TypeScript MCP server for source-code browsing in large local repositories. It combines direct filesystem reads with a lazy `.eye/` cache so simple reads stay cheap and semantic navigation is available when a query needs it.
 
-The server currently provides four read-only tools:
+## Tools
 
-| Tool | What it does now |
+| Tool | Current behavior |
 | --- | --- |
-| `get_project_structure` | Returns a bounded directory tree with truncation controls. |
-| `read_source_range` | Reads a file around a requested line and returns numbered lines. |
-| `find_symbol_definitions` | Tries a local `tags` file first, then falls back to ripgrep-based definition heuristics. |
-| `search_references` | Uses `ripgrep` to find literal or regex references with optional scope narrowing. |
+| `get_project_structure` | Returns a bounded tree and skips generated paths such as `build`, `dist`, `out`, `.eye`, and similar defaults. |
+| `read_source_range` | Reads a file around a requested line with numbered output. |
+| `find_symbol_definitions` | Uses lazy indexing, then prefers semantic resolution for TS/JS and Python, then falls back to indexed or ripgrep-backed candidates. |
+| `find_references` | Uses semantic references when possible, then supplements with indexed and ripgrep matches. |
+| `refresh_index` | Refreshes the `.eye` cache for the whole root or a narrowed scope. |
+| `get_index_status` | Reports generation, counts, and cache state. |
 
-## How it works
+## Current Implementation
 
-- Project structure is built with a bounded filesystem walk. It skips heavyweight directories such as `.git`, `node_modules`, `dist`, and `coverage`.
-- Source reading is direct file I/O with line-window clamping.
-- Definition lookup uses a provider abstraction. The MVP ships with:
-  - a `tags` file provider when a repo already has `tags` or `.tags`
-  - a ripgrep heuristic provider for common definition patterns in popular languages
-- Reference search uses `ripgrep --json` and stops early once the requested result limit is reached.
+- Single project root only.
+- Lazy `.eye/` initialization under the target repository.
+- Persistent cache in `.eye/cache.db`.
+- Content-addressed sidecar blobs in `.eye/blobs/`.
+- Structural indexing with `web-tree-sitter` + wasm grammars.
+- TS/JS semantic navigation through the TypeScript language service.
+- Python semantic navigation through `pyright-langserver`.
+- `ripgrep` for file discovery and fallback search.
+
+## `.eye/` Layout
+
+```text
+.eye/
+  config.json
+  runtime.json
+  cache.db
+  blobs/
+  tmp/
+  logs/
+```
+
+- `config.json`: portable ignore and indexing settings.
+- `runtime.json`: machine-local metadata written by the server.
+- `cache.db` and `blobs/`: generated cache state, ignored from git.
 
 ## Requirements
 
 - Node.js 20+
-- `rg` available on `PATH` for definition fallback and reference search
-- Optional: a local `tags` file for better definition lookup, for example:
+- `rg` on `PATH`
 
-```bash
-ctags -n -R
-```
+`npm run doctor` verifies:
+
+- Node runtime
+- `rg`
+- `pyright-langserver`
+- `better-sqlite3`
+- cache schema version
 
 ## Setup
 
 ```bash
 npm install
+npm run doctor
+npm run lint
 npm run typecheck
+npm run test
 npm run build
 ```
 
-## Running the server
+Full acceptance gate:
 
-The server uses stdio transport:
+```bash
+npm run validate
+```
+
+## Running
 
 ```bash
 node dist/index.js
 ```
 
-Most clients should pass an absolute `projectRoot` argument to the tools. You can also set:
-
-- `EYE_WORKSPACE_ROOT` to define a default repository root
-- `EYE_ALLOWED_ROOTS` as a comma-separated list of absolute paths to restrict access
-
-## Example MCP client configuration
+Example MCP client configuration:
 
 ```json
 {
@@ -65,9 +90,28 @@ Most clients should pass an absolute `projectRoot` argument to the tools. You ca
 }
 ```
 
+## Validation Policy
+
+Unchecked results are not acceptable in this repository. Before claiming work is done, the expected local gates are:
+
+- `npm run doctor`
+- `npm run lint`
+- `npm run typecheck`
+- `npm run test`
+- `npm run test:coverage`
+
+Vitest coverage thresholds are enforced locally, and GitHub Actions uploads `coverage/lcov.info` to Codecov after coverage generation succeeds.
+
+## Tests and Fixtures
+
+- Vitest covers structure reads, source reads, indexing, symbol-id stability, TS navigation, and Python navigation.
+- Four committed fixtures support CI-speed integration tests: `ts-app`, `js-app`, `python-app`, and `mixed-app`.
+- The larger OSS-derived corpus described in `plans/complete-implementation.md` is still planned work; this repository does not currently claim large-corpus validation.
+
 ## Limitations
 
-- This is not a semantic indexer yet. There is no persistent index, tree-sitter integration, or symbol graph.
-- The heuristic definition fallback is language-pattern based and can miss or mis-rank definitions.
-- Project structure does not yet read `.gitignore`; it uses a built-in ignore list.
-- The server currently exposes stdio only.
+- Semantic coverage is currently limited to TS/JS and Python.
+- Indexing is lazy and query-triggered; there is no watch mode or background daemon.
+- Name-based lookups can still be ambiguous and may return multiple candidates.
+- The structural index is tree-sitter based, but not yet a language-complete semantic graph.
+- The committed fixtures are small integration corpora, not the final large OSS snapshots.
