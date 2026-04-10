@@ -34,7 +34,7 @@
 
 ## CI
 
-- GitHub Actions uses Node 25 with pnpm cache.
+- GitHub Actions uses Node 25.
 - CI enables Corepack, installs `ripgrep`, installs with `pnpm install --frozen-lockfile`, then runs doctor, lint, typecheck, test, explicit MCP E2E, coverage, docs validation, and build.
 - CI uploads the coverage artifact and sends `coverage/lcov.info` to Codecov.
 
