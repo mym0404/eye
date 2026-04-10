@@ -1,0 +1,40 @@
+name: real-fixtures
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  real-fixtures:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install ripgrep
+        run: sudo apt-get update && sudo apt-get install --yes ripgrep
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Doctor
+        run: pnpm run doctor
+
+      - name: Real Fixture E2E
+        run: pnpm run test:fixtures:real

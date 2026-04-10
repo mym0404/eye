@@ -17,7 +17,9 @@
       "!coverage",
       "!.eye/blobs",
       "!.eye/logs",
-      "!.eye/tmp"
+      "!.eye/tmp",
+      "!tests/fixtures/real",
+      "!.agents/knowledge/*.local.json"
     ]
   },
   "javascript": {

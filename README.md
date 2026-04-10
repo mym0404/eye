@@ -2,9 +2,17 @@
 
 [![codecov](https://codecov.io/gh/mym0404/eye/branch/main/graph/badge.svg)](https://codecov.io/gh/mym0404/eye)
 
-`eye` is a TypeScript MCP server for source-code browsing in large local repositories. It combines direct filesystem reads with a lazy `.eye/` cache so simple reads stay cheap and semantic navigation is available when a query needs it.
+`eye` is a source-browsing MCP server for large local repositories. It is built for coding agents that need to move through unfamiliar codebases without repeatedly re-scanning the filesystem by hand.
 
-## Tools
+Use `eye` when you want an agent to:
+
+- map the project structure before touching code
+- read source around an exact line
+- find symbol definitions
+- follow references from a stable symbol identifier
+- reuse a lazy local cache instead of re-doing expensive repo scans
+
+## What `eye` Does
 
 | Tool | Current behavior |
 | --- | --- |
@@ -15,7 +23,7 @@
 | `refresh_index` | Refreshes the `.eye` cache for the whole root or a narrowed scope. |
 | `get_index_status` | Reports generation, counts, and cache state. |
 
-## Current Implementation
+## Current Scope
 
 - Single project root only.
 - Lazy `.eye/` initialization under the target repository.
@@ -25,6 +33,127 @@
 - TS/JS semantic navigation through the TypeScript language service.
 - Python semantic navigation through `pyright-langserver`.
 - `ripgrep` for file discovery and fallback search.
+
+## Install the Server
+
+Requirements:
+
+- Node.js 20+
+- Corepack
+- `rg` on `PATH`
+
+Build `eye` once:
+
+```bash
+corepack enable
+corepack use pnpm@10
+pnpm install
+pnpm run build
+```
+
+Optional health check:
+
+```bash
+pnpm run doctor
+```
+
+The stdio entrypoint is:
+
+```bash
+node /absolute/path/to/eye/dist/index.js
+```
+
+`eye` expects `EYE_ALLOWED_ROOTS` so the client can limit which repositories may be browsed.
+
+## Add `eye` to Agents
+
+### Codex
+
+`codex mcp add` accepts a local stdio server command. On Unix-like shells, this form works:
+
+```bash
+codex mcp add eye -- env EYE_ALLOWED_ROOTS=/absolute/path/to/repos node /absolute/path/to/eye/dist/index.js
+```
+
+The local Codex installation on this machine uses the `codex mcp add <name> -- <command>` pattern for stdio MCP servers.
+
+### Claude Code
+
+Claude Code documents local stdio MCP servers with `claude mcp add <name> <command> [args...]`. A project-scoped setup for `eye` looks like this:
+
+```bash
+claude mcp add --scope project --env EYE_ALLOWED_ROOTS=/absolute/path/to/repos eye -- node /absolute/path/to/eye/dist/index.js
+```
+
+After adding it:
+
+```bash
+claude mcp list
+claude mcp get eye
+```
+
+### Generic `.mcp.json` Clients
+
+Many MCP-aware agents and SDKs accept a JSON stdio configuration shaped like this:
+
+```json
+{
+  "mcpServers": {
+    "eye": {
+      "command": "node",
+      "args": ["/absolute/path/to/eye/dist/index.js"],
+      "env": {
+        "EYE_ALLOWED_ROOTS": "/absolute/path/to/repos"
+      }
+    }
+  }
+}
+```
+
+## How to Use `eye` Well
+
+`eye` works best when the prompt tells the agent how to navigate:
+
+1. Start with structure when the repo is unfamiliar.
+2. Read source before making claims about behavior.
+3. Use `symbolId` from definition results before asking for references.
+4. Use `scopePath` when the repo is large and the target area is known.
+5. Call `refresh_index` when the repo changed or when you want a deterministic index pass before deeper navigation.
+
+### Good Prompt Patterns
+
+Use prompts like:
+
+- `Use eye to inspect this repository before answering. Start with get_project_structure at depth 2, then read the relevant files before you summarize the architecture.`
+- `Find the definition of createProgram with eye, then follow references using symbolId and summarize the main call sites.`
+- `Use eye only inside packages/next/src/server. Refresh the index for that scope, then find definitions and references for loadConfig.`
+- `Read the source around django/core/handlers/wsgi.py before explaining the request path. Do not answer from memory.`
+- `Use eye to map the repo, identify the ownership boundary for this feature, and list the exact files I should inspect next.`
+
+### Prompts to Avoid
+
+Avoid vague prompts like:
+
+- `Explain this repo.`
+- `Find where this is used.` without giving a symbol, file, or scope.
+- `Read everything and summarize.` on very large repositories.
+
+Those prompts force broad scans and make it harder for the agent to pick the right tool sequence.
+
+## Recommended Agent Flow
+
+For a fresh repository, the most reliable sequence is:
+
+1. `get_project_structure`
+2. `read_source_range`
+3. `find_symbol_definitions`
+4. `find_references`
+5. `get_index_status` or `refresh_index` when needed
+
+Two operational notes matter:
+
+- `get_project_structure`, `read_source_range`, and `get_index_status` are read-only.
+- `find_symbol_definitions`, `find_references`, and `refresh_index` may create or update the local `.eye/` cache.
 
 ## `.eye/` Layout
 
@@ -42,95 +171,13 @@
 - `runtime.json`: machine-local metadata written by the server.
 - `cache.db` and `blobs/`: generated cache state, ignored from git.
 
-## Requirements
-
-- Node.js 20+
-- Corepack
-- `rg` on `PATH`
-
-`pnpm run doctor` verifies:
-
-- Node runtime
-- `rg`
-- `pyright-langserver`
-- `better-sqlite3`
-- cache schema version
-
-## Setup
-
-If your Node distribution does not expose `corepack` on `PATH`, install it once first:
-
-```bash
-npm install -g corepack
-```
-
-Project setup:
-
-```bash
-corepack enable
-corepack use pnpm@10
-pnpm install
-pnpm run doctor
-pnpm run lint
-pnpm run typecheck
-pnpm run test
-pnpm run test:e2e
-pnpm run build
-```
-
-Full acceptance gate:
-
-```bash
-pnpm run validate
-pnpm run build
-```
-
-Hook install / restore:
-
-```bash
-pnpm exec lefthook install
-```
-
-Knowledge docs live under `.agents/knowledge/`. The root `AGENTS.md` is a router only.
-
-## Running
-
-```bash
-node dist/index.js
-```
-
-Example MCP client configuration:
-
-```json
-{
-  "command": "node",
-  "args": ["/absolute/path/to/eye/dist/index.js"],
-  "env": {
-    "EYE_ALLOWED_ROOTS": "/absolute/path/to/repos"
-  }
-}
-```
-
-## Validation Policy
-
-Unchecked results are not acceptable in this repository. Before claiming work is done, the expected local gates are:
-
-- `pnpm run doctor`
-- `pnpm run lint`
-- `pnpm run typecheck`
-- `pnpm run test`
-- `pnpm run test:e2e`
-- `pnpm run test:coverage`
-- `pnpm run docs:validate`
-- `pnpm run build`
-
-Vitest coverage thresholds are enforced locally, and GitHub Actions uploads `coverage/lcov.info` to Codecov after coverage generation succeeds.
-
 ## Tests and Fixtures
 
-- Vitest covers structure reads, source reads, indexing, symbol-id stability, TS navigation, and Python navigation.
+- The default local validation flow stays lightweight.
 - Four committed fixtures support CI-speed integration tests: `ts-app`, `js-app`, `python-app`, and `mixed-app`.
-- The larger OSS-derived corpus described in `plans/complete-implementation.md` is still planned work; this repository does not currently claim large-corpus validation.
+- `tests/fixtures/real/` contains pinned git submodules for `microsoft/TypeScript`, `vercel/next.js`, `pallets/flask`, and `django/django`.
+- `pnpm run test:fixtures:real` is the heavy real-repository suite.
+- The heavy suite is intentionally separate from the default local `validate` flow and runs in its own GitHub Actions workflow.
 
 ## Limitations
 
@@ -139,3 +186,24 @@ Vitest coverage thresholds are enforced locally, and GitHub Actions uploads `cov
 - Name-based lookups can still be ambiguous and may return multiple candidates.
 - The structural index is tree-sitter based, but not yet a language-complete semantic graph.
 - The committed fixtures are small integration corpora, not the final large OSS snapshots.
+
+## For Maintainers
+
+Standard maintainer flow:
+
+```bash
+pnpm run doctor
+pnpm run lint
+pnpm run typecheck
+pnpm run test
+pnpm run test:e2e
+pnpm run test:coverage
+pnpm run docs:validate
+pnpm run build
+```
+
+Heavy real-repository validation is separate:
+
+```bash
+pnpm run test:fixtures:real
+```

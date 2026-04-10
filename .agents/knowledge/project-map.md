@@ -12,6 +12,7 @@
 - `src/fallback/`: ripgrep and heuristic fallback paths.
 - `src/scripts/`: doctor, knowledge sync, document validation.
 - `tests/`: fixture-backed integration tests.
+- `tests/fixtures/real/`: pinned git submodules for heavy real-repository validation.
 - `.agents/knowledge/`: router-style durable project knowledge.
 - `plans/`: active execution plans.
 
@@ -35,3 +36,4 @@
 - `tests/ts-navigation.test.ts`: TS/JS semantic definitions and references.
 - `tests/python-navigation.test.ts`: Python semantic definitions and references.
 - `tests/mcp-server.e2e.ts`: stdio MCP runtime and tool-surface verification.
+- `tests/mcp-server.real-fixtures.e2e.ts`: heavy stdio MCP validation against pinned real repositories.

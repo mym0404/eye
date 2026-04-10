@@ -1,0 +1,12 @@
+[submodule "tests/fixtures/real/typescript"]
+	path = tests/fixtures/real/typescript
+	url = https://github.com/microsoft/TypeScript.git
+[submodule "tests/fixtures/real/nextjs"]
+	path = tests/fixtures/real/nextjs
+	url = https://github.com/vercel/next.js.git
+[submodule "tests/fixtures/real/flask"]
+	path = tests/fixtures/real/flask
+	url = https://github.com/pallets/flask.git
+[submodule "tests/fixtures/real/django"]
+	path = tests/fixtures/real/django
+	url = https://github.com/django/django.git

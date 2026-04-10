@@ -28,6 +28,7 @@
     "prepare": "lefthook install",
     "test": "vitest run",
     "test:e2e": "vitest run --config vitest.e2e.config.ts",
+    "test:fixtures:real": "vitest run --config vitest.real-fixtures.config.ts",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "validate": "pnpm run doctor && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run test:e2e && pnpm run test:coverage && pnpm run docs:validate",

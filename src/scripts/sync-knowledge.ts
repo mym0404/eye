@@ -101,7 +101,7 @@ const main = async () => {
   })
   await writeFile(
     syncMetadataPath,
-    JSON.stringify(
+    `${JSON.stringify(
       {
         sourcePath,
         remote,
@@ -112,7 +112,7 @@ const main = async () => {
       },
       null,
       2,
-    ),
+    )}\n`,
   )
 
   console.error(`knowledge sync: ok (${headSha.slice(0, 7)})`)
