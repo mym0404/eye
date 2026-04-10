@@ -4,6 +4,9 @@
 
 `eye` is a source-browsing MCP server for large local repositories. It is built for coding agents that need to move through unfamiliar codebases without repeatedly re-scanning the filesystem by hand.
 
+[!IMPORTANT]
+This project is still under active development. Tool behavior, cache details, and setup guidance may change as the server matures.
+
 Use `eye` when you want an agent to:
 
 - map the project structure before touching code
