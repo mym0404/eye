@@ -44,6 +44,7 @@ Read these files in order before making non-trivial changes:
 - Preserve `.eye/config.json` as the portable config surface.
 - Respect generated-path exclusions such as `build`, `dist`, `out`, `.eye`, and configured ignore paths.
 - If Git hooks are missing, restore them with `pnpm exec lefthook install`.
+- When a requested unit of work is complete, commit the current changes and push them to `origin` before reporting completion.
 
 ## Current Scope
 
