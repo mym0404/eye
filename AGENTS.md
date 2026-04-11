@@ -11,7 +11,7 @@ Read these files in order before making non-trivial changes:
 5. `.agents/knowledge/operations/validation-and-hooks.md`
 6. `.agents/knowledge/operations/source-sync.md`
 7. `PLANS.md`
-8. Active plan under `plans/`
+8. `plans/ACTIVE.md`
 
 ## Router Rules
 
@@ -19,6 +19,7 @@ Read these files in order before making non-trivial changes:
 - When code changes alter traversal, indexing, storage, semantic lookup, fallback search, or MCP tool behavior, update `.agents/knowledge/business-logic/indexing-cache-query.md`.
 - When project layout or module ownership changes, update `.agents/knowledge/project-map.md`.
 - When validation, CI, hooks, or package-manager flow changes, update `.agents/knowledge/operations/validation-and-hooks.md`.
+- Keep `plans/ACTIVE.md` current when plan status changes or a new execution plan opens.
 - Before changing knowledge docs, sync the configured external guide source with `pnpm run knowledge:sync`. Source-repo setup lives in `.agents/knowledge/source-repo.local.json`; instructions live in `.agents/knowledge/operations/source-sync.md`.
 
 ## Validation
@@ -44,7 +45,7 @@ Read these files in order before making non-trivial changes:
 - Preserve `.eye/config.json` as the portable config surface.
 - Respect generated-path exclusions such as `build`, `dist`, `out`, `.eye`, and configured ignore paths.
 - If Git hooks are missing, restore them with `pnpm exec lefthook install`.
-- When a requested unit of work is complete, commit the current changes and push them to `origin` before reporting completion.
+- When a requested unit of work is complete, finish by committing the current changes and pushing them to `origin` before reporting completion.
 
 ## Current Scope
 

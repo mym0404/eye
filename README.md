@@ -29,7 +29,7 @@ The project matters only if it does more than wrap `grep`. The current design ai
 | --- | --- |
 | `get_project_structure` | Returns a bounded tree and skips generated paths such as `build`, `dist`, `out`, `.eye`, and similar defaults. |
 | `read_source_range` | Reads a file around a requested line with numbered output. |
-| `query_symbol` | One symbol-query surface for `definition`, `references`, and `context`. It accepts an `anchor`, `symbolId`, or plain `symbol`, prefers semantic resolution for TS/JS and Python, then falls back to indexed or ripgrep-backed candidates. |
+| `query_symbol` | One symbol-query surface for `definition`, `references`, and `context`. It accepts `target.by = "anchor" | "symbolId" | "symbol"`, always returns `matches`, and adds a bounded `context` block for the best definition when `action` is `context`. Resolution can come from semantic, indexed, or ripgrep-backed paths depending on query shape and backend coverage. |
 | `refresh_index` | Refreshes the `.eye` cache for the whole root or a narrowed scope. |
 | `get_index_status` | Reports generation, counts, and cache state. |
 
@@ -41,7 +41,7 @@ The project matters only if it does more than wrap `grep`. The current design ai
 - Content-addressed sidecar blobs in `.eye/blobs/`.
 - Structural indexing with `web-tree-sitter` + wasm grammars.
 - TS/JS semantic navigation through the TypeScript language service.
-- Python semantic navigation through `pyright-langserver`.
+- Python navigation through a `pyright-langserver`-backed adapter, with some real-repository name lookups currently resolving through the index strategy.
 - `ripgrep` for file discovery and fallback search.
 
 ## Install the Server
@@ -73,7 +73,7 @@ The stdio entrypoint is:
 node /absolute/path/to/eye/dist/index.js
 ```
 
-`eye` expects `EYE_ALLOWED_ROOTS` so the client can limit which repositories may be browsed.
+`eye` expects `EYE_ALLOWED_ROOTS` so the client can limit which repositories may be browsed. Each `projectRoot` must be absolute; if a client omits it, `eye` falls back to `EYE_WORKSPACE_ROOT` or the server process cwd.
 
 ## Add `eye` to Agents
 
@@ -207,6 +207,8 @@ Read bounded definition context without opening the whole file:
 }
 ```
 
+`query_symbol` always returns `matches`. When `action` is `context`, the response also includes a `context` object for the first match.
+
 ## Recommended Agent Flow
 
 For a fresh repository, the most reliable sequence is:
@@ -220,6 +222,7 @@ For a fresh repository, the most reliable sequence is:
 Two operational notes matter:
 
 - `get_project_structure`, `read_source_range`, and `get_index_status` are read-only.
+- `get_index_status` returns an idle zero-value summary when no cache exists yet.
 - `query_symbol` and `refresh_index` may create or update the local `.eye/` cache.
 
 ## `.eye/` Layout
@@ -244,6 +247,7 @@ Two operational notes matter:
 - Four committed fixtures support CI-speed integration tests: `ts-app`, `js-app`, `python-app`, and `mixed-app`.
 - `tests/fixtures/real/` contains pinned git submodules for `microsoft/TypeScript`, `vercel/next.js`, `pallets/flask`, and `django/django`.
 - `pnpm run test:fixtures:real` is the heavy real-repository suite.
+- The real-fixture suite reads structure and source from all four pinned repositories, checks scoped large-repo indexing on Next.js and Django, and runs definition/reference symbol flow on Flask.
 - The heavy suite is intentionally separate from the default local `validate` flow and runs in its own GitHub Actions workflow.
 
 ## Limitations
@@ -253,7 +257,7 @@ Two operational notes matter:
 - Name-based lookups can still be ambiguous and may return multiple candidates.
 - `context` is bounded and optimized for agent navigation, not for dumping entire long definitions.
 - The structural index is tree-sitter based, but not yet a language-complete semantic graph.
-- The committed fixtures are small integration corpora, not the final large OSS snapshots.
+- The committed in-repo fixtures are small integration corpora; large OSS coverage lives in `tests/fixtures/real/` submodules.
 
 ## For Maintainers
 

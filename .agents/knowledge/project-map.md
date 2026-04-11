@@ -11,10 +11,12 @@
 - `src/storage/`: SQLite schema, DB access, blob storage.
 - `src/fallback/`: ripgrep and heuristic fallback paths.
 - `src/scripts/`: doctor, knowledge sync, document validation.
+- `.github/workflows/`: CI and heavy real-fixture validation.
+- `lefthook.yml`: local pre-commit and pre-push gates.
 - `tests/`: fixture-backed integration tests.
 - `tests/fixtures/real/`: pinned git submodules for heavy real-repository validation.
 - `.agents/knowledge/`: router-style durable project knowledge.
-- `plans/`: active execution plans.
+- `plans/`: execution plans, with current routing status in `plans/ACTIVE.md`.
 
 ## Query Ownership
 
@@ -26,9 +28,12 @@
 
 ## Storage Ownership
 
+- `.eye/config.json`: portable ignore and indexing config.
+- `.eye/fixtures-manifest.json`: committed only for repository-owned fixture projects.
 - `.eye/cache.db`: SQLite state for files, symbols, references, dependencies, dirty queue, and project status.
 - `.eye/blobs/`: content-addressed JSON payloads from indexing runs.
 - `.eye/runtime.json`: machine-local runtime metadata.
+- `.eye/tmp/`, `.eye/logs/`: local runtime support directories.
 
 ## Tests
 
@@ -37,4 +42,4 @@
 - `tests/ts-navigation.test.ts`: TS/JS semantic definitions and references.
 - `tests/python-navigation.test.ts`: Python semantic definitions and references.
 - `tests/mcp-server.e2e.ts`: stdio MCP runtime and tool-surface verification.
-- `tests/mcp-server.real-fixtures.e2e.ts`: heavy stdio MCP validation against pinned real repositories.
+- `tests/mcp-server.real-fixtures.e2e.ts`: heavy stdio MCP validation against pinned real repositories, including structure/source across all four repos, scoped index status on Next.js and Django, and symbol definition/reference flow on Flask.

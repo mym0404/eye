@@ -14,6 +14,7 @@ const requiredFiles = [
   ".agents/knowledge/operations/validation-and-hooks.md",
   ".agents/knowledge/operations/source-sync.md",
   ".agents/knowledge/source-repo.template.json",
+  "plans/ACTIVE.md",
 ]
 
 const readRepoFile = async (relativePath: string) =>
@@ -41,6 +42,7 @@ const main = async () => {
     ".agents/knowledge/business-logic/indexing-cache-query.md",
     ".agents/knowledge/operations/validation-and-hooks.md",
     ".agents/knowledge/operations/source-sync.md",
+    "plans/ACTIVE.md",
     "pnpm run knowledge:sync",
     "pnpm run docs:validate",
     "pnpm run test:e2e",

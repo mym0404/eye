@@ -1,5 +1,11 @@
 # Query Symbol Refactor ExecPlan
 
+## Status
+
+- Completed.
+- This document records the refactor that replaced split symbol tools with `query_symbol`.
+- Current plan routing lives in `plans/ACTIVE.md`.
+
 ## 1. Goal
 
 Refactor `eye` so its code-navigation surface is meaningfully better than `grep` for coding agents:
@@ -19,12 +25,12 @@ The end result should make the main agent flow:
 2. reuse `symbolId`
 3. ask for references or context without repeating broad text search
 
-## 2. Current State
+## 2. Historical Baseline at Planning Time
 
-- `src/mcp/server.ts` currently exposes six tools, including separate `find_symbol_definitions` and `find_references`.
-- `src/query/definitions.ts` and `src/query/references.ts` already share the same inputs conceptually (`anchor`, `symbolId`, `symbol`, `scopePath`) but expose separate entry points and separate result contracts.
-- `read_source_range` exists, but the current navigation path still pushes agents toward extra file reads for definition body/context.
-- README, docs validation, and E2E tests all encode the old split tool surface.
+- The pre-refactor `src/mcp/server.ts` exposed six tools, including separate `find_symbol_definitions` and `find_references`.
+- `src/query/definitions.ts` and `src/query/references.ts` already shared the same inputs conceptually (`anchor`, `symbolId`, `symbol`, `scopePath`) but exposed separate entry points and separate result contracts.
+- `read_source_range` already existed, but the navigation path still pushed agents toward extra file reads for definition body/context.
+- README, docs validation, and E2E tests still encoded the old split tool surface.
 
 ## 3. Scope and Non-goals
 
@@ -112,14 +118,13 @@ The unified output should still explain how the answer was produced:
 - `indexedGeneration`
 - `truncated`
 
-`definition` and `references` results return `candidates`.
+All actions return `matches`.
 
 `context` returns:
 
-- `definition`
 - `context`
 
-If a target cannot be resolved, return empty candidates or an undefined definition instead of inventing a fake context.
+If a target cannot be resolved, return empty `matches` and omit `context` instead of inventing a fake payload.
 
 ## 5. Files and Modules Expected to Change
 

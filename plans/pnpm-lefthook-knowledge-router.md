@@ -1,3 +1,11 @@
+# Pnpm Lefthook Knowledge Router ExecPlan
+
+## Status
+
+- Completed.
+- This document records the migration to Corepack-managed pnpm, Lefthook, and the router-style knowledge base.
+- Current plan routing lives in `plans/ACTIVE.md`.
+
 # Goal
 
 Move the repository from npm to Corepack-managed pnpm, enforce validation on commit/push through Lefthook, and replace the single-file AGENTS guidance with a router-style knowledge base under `.agents/knowledge/`.

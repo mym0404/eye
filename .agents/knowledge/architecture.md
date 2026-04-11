@@ -18,19 +18,23 @@
 6. `query_symbol` then branches by action:
    - `definition`: semantic lookup -> indexed rows -> heuristic fallback
    - `references`: semantic lookup -> indexed rows -> ripgrep fallback
-   - `context`: resolve definitions first, then read a bounded snippet around the best definition
-7. The real MCP runtime path is enforced by `tests/mcp-server.e2e.ts`, which speaks stdio MCP over newline-delimited JSON.
+   - `context`: resolve definitions first, keep the full `matches` list, then attach one bounded `context` block for the best definition
+7. `get_index_status` stays on a read-only status path:
+   - resolves the project root without forcing `.eye/`
+   - opens the DB only if `cache.db` already exists
+   - returns an idle zero-value summary when no cache exists yet
+8. The real MCP runtime path is enforced by both `tests/mcp-server.e2e.ts` and `tests/mcp-server.real-fixtures.e2e.ts`, which speak stdio MCP over newline-delimited JSON.
 
 ## Direct Read Path
 
 - `get_project_structure` walks the filesystem with bounded depth and entry count.
 - `read_source_range` resolves a file under the project root, rejects binary data, and returns a clamped line window.
+- `get_index_status` shares the same read-only posture and never creates runtime layout just to answer status.
 
 ## Index-Backed Path
 
-- `refresh_index` explicitly refreshes the project-local `.eye` cache.
+- `refresh_index` explicitly refreshes the project-local `.eye` cache for the whole root or a narrowed `scopePath`.
 - `query_symbol` also refreshes lazily.
-- `get_index_status` reads the current DB-backed status summary.
 
 ## Semantic Adapters
 

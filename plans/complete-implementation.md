@@ -1,5 +1,11 @@
 # Complete Implementation ExecPlan
 
+## Status
+
+- Completed historical baseline.
+- This document records the original full-build plan before the current shipped implementation landed.
+- Current plan routing lives in `plans/ACTIVE.md`.
+
 ## 1. Goal
 
 Transform `eye` from the current honest MVP into a production-grade source-browsing MCP server for large local repositories with:
@@ -13,12 +19,12 @@ Transform `eye` from the current honest MVP into a production-grade source-brows
 
 The final result must let a client query a single local project root without manual initialization, while the server lazily creates and maintains `.eye/` state as needed.
 
-## 2. Current State
+## 2. Historical Baseline at Planning Time
 
 - The repository already has a small TypeScript MCP scaffold with read-only tools.
 - The current implementation uses filesystem traversal and ripgrep heuristics only.
 - There is no persistent cache, no semantic backend, no project-local config, no fixture corpus, and no CI quality gates beyond TypeScript buildability.
-- Root `PLANS.md` defines the required ExecPlan format. This document is the active execution plan for the full implementation.
+- Root `PLANS.md` defined the required ExecPlan format when this plan was opened.
 
 ## 3. Scope and Non-goals
 
@@ -153,6 +159,8 @@ Assumptions:
 - If `rg` is unavailable, server startup must fail fast with an explicit dependency error rather than silently degrading semantic/search behavior.
 
 ### 4.4 Tool surface
+
+This planned tool surface was later superseded by the shipped `query_symbol` contract. See `plans/query-symbol-refactor.md` and `README.md` for the current MCP surface.
 
 Core user-facing MCP tools:
 
@@ -518,6 +526,7 @@ Performance validation:
 - `2026-04-10`: replaced the MVP entrypoint with the layered architecture, lazy project context, SQLite/blob cache, wasm tree-sitter indexing, TS semantic backend, and Pyright-backed Python backend
 - `2026-04-10`: added repo validation gates with doctor, biome, typecheck, vitest, coverage, Codecov wiring, and GitHub Actions
 - `2026-04-10`: committed four CI-friendly fixture projects and recorded the larger OSS-derived corpus as still planned work rather than pretending it is already shipped
+- `2026-04-10`: marked this document as a completed historical baseline after the shipped implementation moved to `query_symbol`, persistent `.eye` storage, semantic TS/JS + Python navigation, and the current pnpm-based validation surface
 
 ## 8. Decision Log
 

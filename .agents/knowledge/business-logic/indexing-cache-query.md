@@ -9,7 +9,7 @@
   - `action: references` -> `withDatabase` -> `refreshProjectIndex` -> semantic lookup -> indexed lookup -> `searchWithRipgrep`.
   - `action: context` -> `withDatabase` -> `refreshProjectIndex` -> resolve definitions -> bounded source read around the best definition.
 - `refresh_index`: `withDatabase` -> `refreshProjectIndex`.
-- `get_index_status`: `withDatabase` -> `EyeDatabase.getIndexStatus()`.
+- `get_index_status`: `loadProjectContext({ ensureRuntime: false })` -> `EyeDatabase.openExistingReadOnly()` -> current status or an idle zero-value summary when no cache exists yet.
 
 ## Indexing Flow
 
@@ -33,6 +33,7 @@
 ### Filesystem
 
 - `.eye/config.json`: portable ignore/index config.
+- `.eye/fixtures-manifest.json`: committed only for repository-owned fixture projects.
 - `.eye/runtime.json`: local runtime metadata.
 - `.eye/cache.db`: SQLite cache.
 - `.eye/blobs/<hash>.json`: content-addressed index payload.
@@ -81,7 +82,7 @@
 
 - `context` first resolves definition candidates with the same logic as `definition`.
 - The best candidate becomes the canonical context location.
-- The response then includes a bounded numbered snippet, signature line when available, and body range metadata when the definition span is known.
+- The response still returns the full `matches` list, then adds one bounded numbered snippet, signature line when available, and body range metadata for the best match.
 - Fallback-only context stays honest: it may return a definition match with no body range.
 
 ## Stable Identity
