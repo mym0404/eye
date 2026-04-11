@@ -19,10 +19,8 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "docs:validate": "tsx src/scripts/validate-doc-structure.ts",
     "doctor": "tsx src/scripts/doctor.ts",
     "hooks:install": "lefthook install",
-    "knowledge:sync": "tsx src/scripts/sync-knowledge.ts",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "mcp:stdio": "tsx src/index.ts",
@@ -32,7 +30,7 @@
     "test:fixtures:real": "vitest run --config vitest.real-fixtures.config.ts",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "validate": "pnpm run doctor && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run test:e2e && pnpm run test:coverage && pnpm run docs:validate",
+    "validate": "pnpm run doctor && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run test:e2e && pnpm run test:coverage && pnpm run build",
     "dev": "tsx src/index.ts"
   },
   "keywords": [

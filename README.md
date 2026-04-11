@@ -364,7 +364,6 @@ pnpm run typecheck
 pnpm run test
 pnpm run test:e2e
 pnpm run test:coverage
-pnpm run docs:validate
 pnpm run build
 ```
 

@@ -9,5 +9,3 @@ coverage
 .eye/blobs
 .eye/tmp
 .eye/logs
-.agents/knowledge/source-repo.local.json
-.agents/knowledge/source-sync.local.json

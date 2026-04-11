@@ -6,8 +6,6 @@ pre-commit:
       run: pnpm run typecheck
     - name: test
       run: pnpm run test
-    - name: docs
-      run: pnpm run docs:validate
 
 pre-push:
   jobs:

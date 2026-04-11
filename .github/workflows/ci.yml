@@ -47,9 +47,6 @@ jobs:
       - name: Coverage
         run: pnpm run test:coverage
 
-      - name: Docs Validate
-        run: pnpm run docs:validate
-
       - name: Build
         run: pnpm run build
 

@@ -1,54 +1,47 @@
 # eye Agent Router
 
-## Read Order
+## Project Overview
 
-Read these files in order before making non-trivial changes:
+`eye` is a source-browsing MCP server for large local repositories. Root `AGENTS.md` stays short and routes durable project knowledge into `.agents/knowledge/`.
+
+## Always-On Rules
+
+- Treat the root `AGENTS.md` as a router, not the main knowledge store.
+- Keep docs honest: update the relevant knowledge files when verified repository behavior changes.
+- Keep traversal, indexing, cache storage, semantic adapters, and fallback search concerns separated.
+- Preserve `.eye/config.json` as the portable config surface and respect generated-path exclusions such as `build`, `dist`, `out`, and `.eye`.
+- Keep `plans/ACTIVE.md` current when a multi-step execution plan opens or changes status.
+
+## Validation Commands
+
+- Use Corepack-managed pnpm only.
+- Standard gate: `pnpm run doctor`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run test`, `pnpm run test:e2e`
+- Broad changes: `pnpm run validate`
+- Feature-complete or release-facing changes: `pnpm run test:coverage`, `pnpm run build`
+- Do not report completion if `pnpm run lint`, `pnpm run typecheck`, or `pnpm run test` is failing.
+
+## Knowledge Routing
+
+Read these files before non-trivial changes:
 
 1. `.agents/knowledge/README.md`
 2. `.agents/knowledge/project-map.md`
 3. `.agents/knowledge/architecture.md`
 4. `.agents/knowledge/business-logic/indexing-cache-query.md`
 5. `.agents/knowledge/operations/validation-and-hooks.md`
-6. `.agents/knowledge/operations/source-sync.md`
-7. `PLANS.md`
-8. `plans/ACTIVE.md`
+6. `PLANS.md`
+7. `plans/ACTIVE.md`
 
-## Router Rules
+Update these docs when relevant:
 
-- Root `AGENTS.md` is only a router. Long-lived project knowledge belongs under `.agents/knowledge/`.
-- When code changes alter traversal, indexing, storage, semantic lookup, fallback search, or MCP tool behavior, update `.agents/knowledge/business-logic/indexing-cache-query.md`.
-- When project layout or module ownership changes, update `.agents/knowledge/project-map.md`.
-- When validation, CI, hooks, or package-manager flow changes, update `.agents/knowledge/operations/validation-and-hooks.md`.
-- Keep `plans/ACTIVE.md` current when plan status changes or a new execution plan opens.
-- Before changing knowledge docs, sync the configured external guide source with `pnpm run knowledge:sync`. Source-repo setup lives in `.agents/knowledge/source-repo.local.json`; instructions live in `.agents/knowledge/operations/source-sync.md`.
+- traversal, indexing, storage, semantic lookup, fallback search, or MCP tool behavior: `.agents/knowledge/business-logic/indexing-cache-query.md`
+- project layout or module ownership: `.agents/knowledge/project-map.md`
+- validation, CI, hooks, or package-manager flow: `.agents/knowledge/operations/validation-and-hooks.md`
 
-## Validation
+## Knowledge Sync Contract
 
-- Use Corepack-managed pnpm only.
-- Standard implementation gate:
-  - `pnpm run doctor`
-  - `pnpm run lint`
-  - `pnpm run typecheck`
-  - `pnpm run test`
-  - `pnpm run test:e2e`
-- Feature-complete gate:
-  - `pnpm run test:coverage`
-  - `pnpm run docs:validate`
-  - `pnpm run build`
-- Broad changes should use `pnpm run validate`.
-- Do not claim work is done if `pnpm run lint`, `pnpm run typecheck`, or `pnpm run test` has not passed.
-
-## Working Style
-
-- Keep docs honest. Planned work stays planned.
-- Keep traversal, indexing, cache storage, semantic adapters, and fallback search separated.
-- Preserve `.eye/config.json` as the portable config surface.
-- Respect generated-path exclusions such as `build`, `dist`, `out`, `.eye`, and configured ignore paths.
-- If Git hooks are missing, restore them with `pnpm exec lefthook install`.
-- When a requested unit of work is complete, finish by committing the current changes and pushing them to `origin` before reporting completion.
-
-## Current Scope
-
-- The shipped implementation is a single-root MCP server.
-- Semantic navigation is currently implemented for TS/JS and Python.
-- Fixtures in-repo are CI-sized integration corpora, not the final large OSS corpus.
+- `.agents/knowledge/` is the default home for evergreen project knowledge.
+- Root `AGENTS.md` must stay synchronized with the deeper knowledge base.
+- When repository behavior changes, update the relevant knowledge docs with it.
+- Consolidate stale or duplicated guidance instead of letting multiple copies drift.
+- Do not add dedicated knowledge-only validators, CI gates, or sync machinery as the default workflow.

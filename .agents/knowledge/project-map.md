@@ -10,7 +10,7 @@
 - `src/query/`: structure, source, unified symbol query, lower-level navigation helpers, and status queries.
 - `src/storage/`: SQLite schema, DB access, blob storage.
 - `src/fallback/`: ripgrep and heuristic fallback paths.
-- `src/scripts/`: doctor, knowledge sync, document validation.
+- `src/scripts/`: repository maintenance scripts such as `doctor`.
 - `.github/workflows/`: CI and heavy real-fixture validation.
 - `lefthook.yml`: local pre-commit and pre-push gates.
 - `tests/`: fixture-backed integration tests.
