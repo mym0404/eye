@@ -97,4 +97,52 @@ describe("index lifecycle", () => {
       database.close()
     }
   })
+
+  it("indexes only the configured source roots", async () => {
+    const fixture = await createTempFixtureProject("monorepo-app")
+    cleanups.push(fixture.cleanup)
+
+    const context = await loadProjectContext({
+      projectRoot: fixture.projectRoot,
+    })
+    const database = await EyeDatabase.open({
+      databasePath: context.paths.cacheDbPath,
+      projectRoot: context.projectRoot,
+    })
+
+    try {
+      await refreshProjectIndex({
+        context,
+        database,
+      })
+
+      expect(context.config.sourceRoots).toEqual([
+        "packages/api/app",
+        "packages/web/src",
+      ])
+
+      const trackedPaths = database
+        .listTrackedFiles()
+        .map((row) => row.relative_path)
+
+      expect(trackedPaths).toContain("packages/web/src/index.ts")
+      expect(trackedPaths).toContain("packages/api/app/main.py")
+      expect(trackedPaths).not.toContain("scripts/tool.js")
+
+      const definition = await querySymbol({
+        context,
+        database,
+        target: {
+          by: "symbol",
+          symbol: "runTool",
+        },
+        action: "definition",
+        maxResults: 10,
+      })
+
+      expect(definition.matches).toEqual([])
+    } finally {
+      database.close()
+    }
+  })
 })

@@ -73,7 +73,17 @@ The stdio entrypoint is:
 node /absolute/path/to/eye/dist/index.js
 ```
 
-`eye` expects `EYE_ALLOWED_ROOTS` so the client can limit which repositories may be browsed. Each `projectRoot` must be absolute; if a client omits it, `eye` falls back to `EYE_WORKSPACE_ROOT` or the server process cwd.
+`eye` no longer uses environment variables for project selection. It resolves one project root at a time using this order:
+
+1. explicit `projectRoot` from the MCP tool call
+2. the nearest ancestor that already has `.eye/config.json`
+3. the nearest workspace root marked by `.git`, `pnpm-workspace.yaml`, or `turbo.json`
+4. the nearest project root marked by `package.json`, `tsconfig.json`, `jsconfig.json`, `pyproject.toml`, or `setup.py`
+5. the server process cwd if none of those markers exist
+
+If you want the smoothest setup, run the MCP server from the repository root or from any directory inside the repository you want to inspect. If your client launches the server from somewhere else, pass `projectRoot` explicitly in tool calls.
+
+On the first index-backed operation, `eye` creates `.eye/config.json` and fills `sourceRoots` with inferred relative paths such as `src`, `app`, or `packages/web/src`. You can edit that file later.
 
 ## Add `eye` to Agents
 
@@ -82,7 +92,7 @@ node /absolute/path/to/eye/dist/index.js
 `codex mcp add` accepts a local stdio server command. On Unix-like shells, this form works:
 
 ```bash
-codex mcp add eye -- env EYE_ALLOWED_ROOTS=/absolute/path/to/repos node /absolute/path/to/eye/dist/index.js
+codex mcp add eye -- node /absolute/path/to/eye/dist/index.js
 ```
 
 The local Codex installation on this machine uses the `codex mcp add <name> -- <command>` pattern for stdio MCP servers.
@@ -92,7 +102,7 @@ The local Codex installation on this machine uses the `codex mcp add <name> -- <
 Claude Code documents local stdio MCP servers with `claude mcp add <name> <command> [args...]`. A project-scoped setup for `eye` looks like this:
 
 ```bash
-claude mcp add --scope project --env EYE_ALLOWED_ROOTS=/absolute/path/to/repos eye -- node /absolute/path/to/eye/dist/index.js
+claude mcp add --scope project eye -- node /absolute/path/to/eye/dist/index.js
 ```
 
 After adding it:
@@ -111,14 +121,59 @@ Many MCP-aware agents and SDKs accept a JSON stdio configuration shaped like thi
   "mcpServers": {
     "eye": {
       "command": "node",
-      "args": ["/absolute/path/to/eye/dist/index.js"],
-      "env": {
-        "EYE_ALLOWED_ROOTS": "/absolute/path/to/repos"
-      }
+      "args": ["/absolute/path/to/eye/dist/index.js"]
     }
   }
 }
 ```
+
+## Project Root Setup
+
+### Automatic root detection
+
+- Start the server from the repo root, or from any directory inside the repo, when possible.
+- If the repo already has `.eye/config.json`, that file anchors future auto-detection.
+- For monorepos, workspace markers win over nested package markers, so `packages/web/src` still resolves to the workspace root.
+
+### Explicit override with `projectRoot`
+
+- Every MCP tool still accepts `projectRoot`.
+- Use it when one MCP server instance needs to inspect different repositories, or when your client launches the server from an unrelated cwd.
+- `projectRoot` must be an absolute path.
+
+### First-run config
+
+The first index-backed operation writes `.eye/config.json` like this:
+
+```json
+{
+  "sourceRoots": ["src", "app"],
+  "ignore": {
+    "generatedPaths": [
+      ".git/**",
+      ".worktrees/**",
+      "build/**",
+      "node_modules/**",
+      "dist/**",
+      "out/**",
+      ".eye/**",
+      "coverage/**",
+      ".next/**",
+      ".turbo/**",
+      ".cache/**"
+    ],
+    "additionalPaths": []
+  },
+  "indexing": {
+    "workerConcurrency": 4,
+    "includeHidden": true
+  }
+}
+```
+
+- `sourceRoots` controls which relative paths are indexed.
+- Structure and source reads still work across the whole project root.
+- Edit `sourceRoots` if the inferred defaults miss a package or include too much.
 
 ## How to Use `eye` Well
 
@@ -153,6 +208,25 @@ Those prompts force broad scans and make it harder for the agent to pick the rig
 ## `query_symbol` Patterns
 
 Resolve from the code you are currently looking at:
+
+With automatic root detection:
+
+```json
+{
+  "name": "query_symbol",
+  "arguments": {
+    "target": {
+      "by": "anchor",
+      "filePath": "src/main.ts",
+      "line": 42,
+      "column": 17
+    },
+    "action": "definition"
+  }
+}
+```
+
+With an explicit override:
 
 ```json
 {
@@ -237,14 +311,14 @@ Two operational notes matter:
   logs/
 ```
 
-- `config.json`: portable ignore and indexing settings.
+- `config.json`: portable source-root, ignore, and indexing settings.
 - `runtime.json`: machine-local metadata written by the server.
 - `cache.db` and `blobs/`: generated cache state, ignored from git.
 
 ## Tests and Fixtures
 
 - The default local validation flow stays lightweight.
-- Four committed fixtures support CI-speed integration tests: `ts-app`, `js-app`, `python-app`, and `mixed-app`.
+- Six committed fixtures support CI-speed integration tests: `ts-app`, `js-app`, `python-app`, `mixed-app`, `monorepo-app`, and `root-app`.
 - `tests/fixtures/real/` contains pinned git submodules for `microsoft/TypeScript`, `vercel/next.js`, `pallets/flask`, and `django/django`.
 - `pnpm run test:fixtures:real` is the heavy real-repository suite.
 - The real-fixture suite reads structure and source from all four pinned repositories, checks scoped large-repo indexing on Next.js and Django, and runs definition/reference symbol flow on Flask.

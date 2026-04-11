@@ -18,6 +18,7 @@ type JsonRpcMessage = {
 }
 
 const repoRoot = process.cwd()
+const serverEntryPath = `${repoRoot}/src/index.ts`
 const tsxBin = resolvePackageBin({
   packageName: "tsx",
   binName: "tsx",
@@ -39,13 +40,10 @@ export class McpTestClient {
   >()
   private stderr = ""
 
-  constructor({ allowedRoot }: { allowedRoot: string }) {
-    this.child = spawn(process.execPath, [tsxBin, "src/index.ts"], {
-      cwd: repoRoot,
-      env: {
-        ...process.env,
-        EYE_ALLOWED_ROOTS: allowedRoot,
-      },
+  constructor({ cwd }: { cwd?: string } = {}) {
+    this.child = spawn(process.execPath, [tsxBin, serverEntryPath], {
+      cwd: cwd ?? repoRoot,
+      env: process.env,
       stdio: ["pipe", "pipe", "pipe"],
     })
 

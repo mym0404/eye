@@ -14,9 +14,7 @@ const touchedProjectRoots = new Set<string>()
 const createClient = async (projectRoot: string) => {
   touchedProjectRoots.add(projectRoot)
 
-  const client = new McpTestClient({
-    allowedRoot: projectRoot,
-  })
+  const client = new McpTestClient()
   clients.push(client)
   await client.initialize()
 

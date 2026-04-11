@@ -2,6 +2,7 @@ import { readFile, stat } from "node:fs/promises"
 import path from "node:path"
 import { listFilesWithRipgrep } from "../fallback/ripgrep.js"
 import type { EyeProjectContext } from "../project/context.js"
+import { resolveSearchRoots } from "../project/source-roots.js"
 import { EyeBlobStore } from "../storage/blob-store.js"
 import type { EyeDatabase } from "../storage/database.js"
 import { runWithConcurrency } from "../util/concurrency.js"
@@ -89,12 +90,25 @@ export const refreshProjectIndex = async ({
   const trackedMap = new Map(
     trackedFiles.map((row) => [row.relative_path, row]),
   )
-
-  const discoveredPaths = await listFilesWithRipgrep({
-    projectRoot: context.projectRoot,
-    searchRoot: scopePath ?? ".",
-    globs: buildRipgrepGlobs(context),
+  const searchRoots = resolveSearchRoots({
+    sourceRoots: context.config.sourceRoots,
+    scopePath,
   })
+  const discoveredPaths = [
+    ...new Set(
+      (
+        await Promise.all(
+          searchRoots.map((searchRoot) =>
+            listFilesWithRipgrep({
+              projectRoot: context.projectRoot,
+              searchRoot,
+              globs: buildRipgrepGlobs(context),
+            }),
+          ),
+        )
+      ).flat(),
+    ),
+  ].sort((left, right) => left.localeCompare(right))
 
   const candidatePaths = discoveredPaths.filter(
     (relativePath) =>

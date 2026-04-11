@@ -11,6 +11,7 @@ import type { LanguageId } from "../indexing/types.js"
 import { getPyrightClient } from "../lang/python/pyright-client.js"
 import { getTsReferencesAt } from "../lang/ts/service.js"
 import type { EyeProjectContext } from "../project/context.js"
+import { resolveSearchRoots } from "../project/source-roots.js"
 import type { EyeDatabase } from "../storage/database.js"
 
 export type ReferenceCandidate = {
@@ -273,7 +274,10 @@ export const findReferences = async ({
             fixedStrings: true,
             wordMatch: true,
             caseSensitive: false,
-            searchRoots: scopePath ? [scopePath] : ["."],
+            searchRoots: resolveSearchRoots({
+              sourceRoots: context.config.sourceRoots,
+              scopePath,
+            }),
             globs: buildRipgrepGlobs(context),
           })
         ).matches.map((match) => ({

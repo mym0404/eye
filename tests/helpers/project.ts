@@ -1,4 +1,4 @@
-import { cp, mkdtemp, rm } from "node:fs/promises"
+import { cp, mkdtemp, realpath, rm } from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
 
@@ -16,9 +16,10 @@ export const createTempFixtureProject = async (fixtureName: string) => {
   await cp(fixtureRoot, projectRoot, {
     recursive: true,
   })
+  const resolvedProjectRoot = await realpath(projectRoot)
 
   return {
-    projectRoot,
+    projectRoot: resolvedProjectRoot,
     cleanup: async () => {
       await rm(tempRoot, {
         recursive: true,

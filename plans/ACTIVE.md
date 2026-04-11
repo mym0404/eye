@@ -9,6 +9,7 @@
 ## Status Index
 
 - `complete-implementation.md`: completed historical baseline for the original full-build plan.
+- `auto-root-source-roots.md`: completed.
 - `pnpm-lefthook-knowledge-router.md`: completed.
 - `query-symbol-refactor.md`: completed.
 - `runtime-e2e-revalidation.md`: completed.

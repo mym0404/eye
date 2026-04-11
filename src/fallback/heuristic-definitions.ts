@@ -1,4 +1,5 @@
 import type { EyeProjectContext } from "../project/context.js"
+import { resolveSearchRoots } from "../project/source-roots.js"
 import { searchWithRipgrep } from "./ripgrep.js"
 
 const escapeRegExp = (value: string) =>
@@ -42,7 +43,10 @@ export const searchDefinitionHeuristics = async ({
     fixedStrings: false,
     wordMatch: false,
     caseSensitive: false,
-    searchRoots: scopePath ? [scopePath] : ["."],
+    searchRoots: resolveSearchRoots({
+      sourceRoots: context.config.sourceRoots,
+      scopePath,
+    }),
     globs: buildRipgrepGlobs(context),
   })
 }

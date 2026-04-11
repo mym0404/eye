@@ -1,4 +1,4 @@
-import { stat } from "node:fs/promises"
+import { access, stat } from "node:fs/promises"
 import path from "node:path"
 
 import {
@@ -22,21 +22,69 @@ const alwaysIgnoredNames = new Set([
   ".cache",
 ])
 
-const splitConfiguredRoots = (value: string | undefined) =>
-  value
-    ?.split(",")
-    .map((item) => item.trim())
-    .filter(Boolean) ?? []
+const workspaceMarkers = [".git", "pnpm-workspace.yaml", "turbo.json"]
+const projectMarkers = [
+  "package.json",
+  "tsconfig.json",
+  "jsconfig.json",
+  "pyproject.toml",
+  "setup.py",
+]
 
-const getAllowedRoots = async () => {
-  const configuredRoots = splitConfiguredRoots(process.env.EYE_ALLOWED_ROOTS)
-  const roots = await Promise.all(
-    configuredRoots.map(async (candidate) =>
-      resolveExistingDirectory(candidate).catch(() => undefined),
-    ),
-  )
+const markerExists = async ({
+  directoryPath,
+  marker,
+}: {
+  directoryPath: string
+  marker: string
+}) => {
+  try {
+    await access(path.join(directoryPath, marker))
+    return true
+  } catch {
+    return false
+  }
+}
 
-  return roots.filter((value): value is string => value !== undefined)
+const listAncestors = (directoryPath: string) => {
+  const ancestors: string[] = []
+  let currentPath = directoryPath
+
+  while (true) {
+    ancestors.push(currentPath)
+    const parentPath = path.dirname(currentPath)
+
+    if (parentPath === currentPath) {
+      return ancestors
+    }
+
+    currentPath = parentPath
+  }
+}
+
+const findMarkedAncestor = async ({
+  ancestors,
+  markers,
+}: {
+  ancestors: string[]
+  markers: string[]
+}) => {
+  for (const candidatePath of ancestors) {
+    const matches = await Promise.all(
+      markers.map((marker) =>
+        markerExists({
+          directoryPath: candidatePath,
+          marker,
+        }),
+      ),
+    )
+
+    if (matches.some(Boolean)) {
+      return candidatePath
+    }
+  }
+
+  return undefined
 }
 
 export const shouldSkipName = ({
@@ -59,32 +107,49 @@ export const shouldSkipName = ({
 
 export const resolveProjectRoot = async ({
   projectRoot,
+  cwd,
 }: {
   projectRoot?: string
+  cwd?: string
 }) => {
-  const rawRoot = projectRoot ?? process.env.EYE_WORKSPACE_ROOT ?? process.cwd()
+  if (projectRoot) {
+    if (!path.isAbsolute(projectRoot)) {
+      throw new Error("projectRoot must be an absolute path.")
+    }
 
-  if (!path.isAbsolute(rawRoot)) {
-    throw new Error(
-      "projectRoot must be an absolute path. Pass an absolute path or set EYE_WORKSPACE_ROOT.",
-    )
+    return resolveExistingDirectory(projectRoot)
   }
 
-  const resolvedRoot = await resolveExistingDirectory(rawRoot)
-  const allowedRoots = await getAllowedRoots()
+  const resolvedCwd = await resolveExistingDirectory(cwd ?? process.cwd())
+  const ancestors = listAncestors(resolvedCwd)
+  const configRoot = await findMarkedAncestor({
+    ancestors,
+    markers: [path.join(".eye", "config.json")],
+  })
 
-  if (
-    allowedRoots.length > 0 &&
-    !allowedRoots.some((allowedRoot) =>
-      isWithinPath({ parent: allowedRoot, child: resolvedRoot }),
-    )
-  ) {
-    throw new Error(
-      `projectRoot is outside EYE_ALLOWED_ROOTS: ${resolvedRoot}. Allowed roots: ${allowedRoots.join(", ")}`,
-    )
+  if (configRoot) {
+    return resolveExistingDirectory(configRoot)
   }
 
-  return resolvedRoot
+  const workspaceRoot = await findMarkedAncestor({
+    ancestors,
+    markers: workspaceMarkers,
+  })
+
+  if (workspaceRoot) {
+    return resolveExistingDirectory(workspaceRoot)
+  }
+
+  const projectMarkerRoot = await findMarkedAncestor({
+    ancestors,
+    markers: projectMarkers,
+  })
+
+  if (projectMarkerRoot) {
+    return resolveExistingDirectory(projectMarkerRoot)
+  }
+
+  return resolvedCwd
 }
 
 export const resolveProjectPath = async ({

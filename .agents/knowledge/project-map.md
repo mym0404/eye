@@ -4,7 +4,7 @@
 
 - `src/index.ts`: stdio MCP entrypoint.
 - `src/mcp/`: MCP tool registration and request wiring.
-- `src/project/`: project-root resolution, ignore policy, `.eye` layout.
+- `src/project/`: project-root resolution, source-root inference, ignore policy, `.eye` layout.
 - `src/indexing/`: discovery, change detection, parsing, symbol/reference extraction.
 - `src/lang/`: semantic adapters and parser integrations.
 - `src/query/`: structure, source, unified symbol query, lower-level navigation helpers, and status queries.
@@ -28,7 +28,7 @@
 
 ## Storage Ownership
 
-- `.eye/config.json`: portable ignore and indexing config.
+- `.eye/config.json`: portable source-root, ignore, and indexing config.
 - `.eye/fixtures-manifest.json`: committed only for repository-owned fixture projects.
 - `.eye/cache.db`: SQLite state for files, symbols, references, dependencies, dirty queue, and project status.
 - `.eye/blobs/`: content-addressed JSON payloads from indexing runs.
@@ -39,6 +39,7 @@
 
 - `tests/structure-and-source.test.ts`: direct read paths.
 - `tests/indexing-and-status.test.ts`: refresh lifecycle and symbol-id stability.
+- `tests/project-context.test.ts`: root auto-detection and config bootstrap behavior.
 - `tests/ts-navigation.test.ts`: TS/JS semantic definitions and references.
 - `tests/python-navigation.test.ts`: Python semantic definitions and references.
 - `tests/mcp-server.e2e.ts`: stdio MCP runtime and tool-surface verification.

@@ -59,6 +59,14 @@ export const searchWithRipgrep = async ({
   globs?: string[]
 }) =>
   new Promise<SearchResult>((resolve, reject) => {
+    if (searchRoots.length === 0) {
+      resolve({
+        matches: [],
+        truncated: false,
+      })
+      return
+    }
+
     const args = [
       "--json",
       "--line-number",
@@ -81,7 +89,7 @@ export const searchWithRipgrep = async ({
       args.push("-g", glob)
     }
 
-    args.push(pattern, ...(searchRoots.length > 0 ? searchRoots : ["."]))
+    args.push(pattern, ...searchRoots)
 
     const child = spawn("rg", args, {
       cwd: projectRoot,

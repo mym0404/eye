@@ -1,4 +1,4 @@
-import { access, mkdir, writeFile } from "node:fs/promises"
+import { access, mkdir, readFile, writeFile } from "node:fs/promises"
 import path from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
 
@@ -32,9 +32,7 @@ describe("MCP server E2E", () => {
     const fixture = await createTempFixtureProject("ts-app")
     cleanups.push(fixture.cleanup)
 
-    const client = new McpTestClient({
-      allowedRoot: fixture.projectRoot,
-    })
+    const client = new McpTestClient()
     clients.push(client)
 
     await client.initialize()
@@ -57,9 +55,7 @@ describe("MCP server E2E", () => {
     const fixture = await createTempFixtureProject("ts-app")
     cleanups.push(fixture.cleanup)
 
-    const client = new McpTestClient({
-      allowedRoot: fixture.projectRoot,
-    })
+    const client = new McpTestClient()
     clients.push(client)
 
     await client.initialize()
@@ -81,9 +77,7 @@ describe("MCP server E2E", () => {
     const fixture = await createTempFixtureProject("mixed-app")
     cleanups.push(fixture.cleanup)
 
-    const client = new McpTestClient({
-      allowedRoot: fixture.projectRoot,
-    })
+    const client = new McpTestClient()
     clients.push(client)
 
     await client.initialize()
@@ -133,18 +127,62 @@ describe("MCP server E2E", () => {
     )
   })
 
-  it("keeps read-only tools runtime-free and lazily creates .eye for index-backed tools", async () => {
+  it("detects the project root from a nested cwd when projectRoot is omitted", async () => {
     const fixture = await createTempFixtureProject("ts-app")
     cleanups.push(fixture.cleanup)
 
     const client = new McpTestClient({
-      allowedRoot: fixture.projectRoot,
+      cwd: path.join(fixture.projectRoot, "src"),
     })
     clients.push(client)
 
     await client.initialize()
 
+    const structure = await client.callTool({
+      name: "get_project_structure",
+      args: {
+        depth: 2,
+        maxEntries: 50,
+        includeFiles: true,
+        includeHidden: false,
+      },
+    })
+    const structureContent = structure.structuredContent as {
+      projectRoot: string
+    }
+
+    expect(structureContent.projectRoot).toBe(fixture.projectRoot)
+
+    const source = await client.callTool({
+      name: "read_source_range",
+      args: {
+        filePath: "src/main.ts",
+        line: 1,
+        before: 0,
+        after: 0,
+        maxLines: 5,
+      },
+    })
+    const sourceContent = source.structuredContent as {
+      projectRoot: string
+      lines: Array<{ text: string }>
+    }
+
+    expect(sourceContent.projectRoot).toBe(fixture.projectRoot)
+    expect(sourceContent.lines[0]?.text).toContain("import { buildUser }")
+  })
+
+  it("keeps read-only tools runtime-free and lazily creates .eye for index-backed tools", async () => {
+    const fixture = await createTempFixtureProject("ts-app")
+    cleanups.push(fixture.cleanup)
+
+    const client = new McpTestClient()
+    clients.push(client)
+
+    await client.initialize()
+
     const eyeDir = path.join(fixture.projectRoot, ".eye")
+    const configPath = path.join(eyeDir, "config.json")
 
     expect(await pathExists(eyeDir)).toBe(false)
 
@@ -193,16 +231,21 @@ describe("MCP server E2E", () => {
     }
 
     expect(await pathExists(eyeDir)).toBe(true)
+    expect(await pathExists(configPath)).toBe(true)
     expect(definitionContent.matches[0]?.filePath).toBe("src/utils/helper.ts")
+
+    const config = JSON.parse(await readFile(configPath, "utf8")) as {
+      sourceRoots: string[]
+    }
+
+    expect(config.sourceRoots).toEqual(["src"])
   })
 
   it("refreshes index, reports status, and resolves TS definitions/references", async () => {
     const fixture = await createTempFixtureProject("ts-app")
     cleanups.push(fixture.cleanup)
 
-    const client = new McpTestClient({
-      allowedRoot: fixture.projectRoot,
-    })
+    const client = new McpTestClient()
     clients.push(client)
 
     await client.initialize()
@@ -350,9 +393,7 @@ describe("MCP server E2E", () => {
     const fixture = await createTempFixtureProject("python-app")
     cleanups.push(fixture.cleanup)
 
-    const client = new McpTestClient({
-      allowedRoot: fixture.projectRoot,
-    })
+    const client = new McpTestClient()
     clients.push(client)
 
     await client.initialize()
@@ -419,9 +460,7 @@ describe("MCP server E2E", () => {
     const fixture = await createTempFixtureProject("ts-app")
     cleanups.push(fixture.cleanup)
 
-    const firstClient = new McpTestClient({
-      allowedRoot: fixture.projectRoot,
-    })
+    const firstClient = new McpTestClient()
     clients.push(firstClient)
 
     await firstClient.initialize()
@@ -438,9 +477,7 @@ describe("MCP server E2E", () => {
 
     await firstClient.close()
 
-    const secondClient = new McpTestClient({
-      allowedRoot: fixture.projectRoot,
-    })
+    const secondClient = new McpTestClient()
     clients.push(secondClient)
 
     await secondClient.initialize()
@@ -470,9 +507,7 @@ describe("MCP server E2E", () => {
     const fixture = await createTempFixtureProject("ts-app")
     cleanups.push(fixture.cleanup)
 
-    const client = new McpTestClient({
-      allowedRoot: fixture.projectRoot,
-    })
+    const client = new McpTestClient()
     clients.push(client)
 
     await client.initialize()
@@ -572,9 +607,7 @@ describe("MCP server E2E", () => {
       ),
     ])
 
-    const client = new McpTestClient({
-      allowedRoot: fixture.projectRoot,
-    })
+    const client = new McpTestClient()
     clients.push(client)
 
     await client.initialize()
@@ -647,9 +680,7 @@ describe("MCP server E2E", () => {
       "export const helper = () => 0\n",
     )
 
-    const client = new McpTestClient({
-      allowedRoot: fixture.projectRoot,
-    })
+    const client = new McpTestClient()
     clients.push(client)
 
     await client.initialize()
