@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "eye": {
+      "command": "pnpm",
+      "args": ["exec", "tsx", "src/index.ts"]
+    }
+  }
+}

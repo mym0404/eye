@@ -127,6 +127,26 @@ Many MCP-aware agents and SDKs accept a JSON stdio configuration shaped like thi
 }
 ```
 
+### Dogfooding In This Repo
+
+This repository now ships a project-local [.mcp.json](/Users/mj/projects/eye/.mcp.json#L1) so MCP-aware clients can use `eye` directly from the repo checkout without extra env setup.
+
+- The bundled config runs `pnpm exec tsx src/index.ts`, so a local build is not required just to try the server.
+- The committed [.eye/config.json](/Users/mj/projects/eye/.eye/config.json#L1) sets `sourceRoots` to `src` and `tests` so navigation in this repo is useful immediately.
+- If your client supports project `.mcp.json` files, opening this repo is enough. Otherwise reuse the same command manually.
+
+### Codex In This Repo
+
+For Codex CLI, the lowest-friction setup from this checkout is:
+
+```bash
+codex mcp add eye -- pnpm --dir /absolute/path/to/eye run mcp:stdio
+```
+
+- `mcp:stdio` is a repo-local wrapper around `tsx src/index.ts`.
+- This avoids requiring a separate `dist` build just to dogfood `eye` inside this repository.
+- After adding it, open this repo in Codex and `eye` will resolve this repo as the project root automatically.
+
 ## Project Root Setup
 
 ### Automatic root detection

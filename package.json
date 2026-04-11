@@ -25,6 +25,7 @@
     "knowledge:sync": "tsx src/scripts/sync-knowledge.ts",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
+    "mcp:stdio": "tsx src/index.ts",
     "prepare": "lefthook install",
     "test": "vitest run",
     "test:e2e": "vitest run --config vitest.e2e.config.ts",

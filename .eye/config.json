@@ -1,6 +1,19 @@
 {
+  "sourceRoots": ["src", "tests"],
   "ignore": {
-    "generatedPaths": ["build/**", "dist/**", "out/**", ".eye/**"],
+    "generatedPaths": [
+      ".git/**",
+      ".worktrees/**",
+      "build/**",
+      "node_modules/**",
+      "dist/**",
+      "out/**",
+      ".eye/**",
+      "coverage/**",
+      ".next/**",
+      ".turbo/**",
+      ".cache/**"
+    ],
     "additionalPaths": []
   },
   "indexing": {
