@@ -2,45 +2,43 @@
 
 ## Top Level
 
-- `src/index.ts`: stdio MCP entrypoint.
-- `src/mcp/`: MCP tool registration and request wiring.
-- `src/project/`: project-root resolution, source-root inference, ignore policy, `.eye` layout.
-- `src/indexing/`: discovery, change detection, parsing, symbol/reference extraction.
-- `src/lang/`: semantic adapters and parser integrations.
-- `src/query/`: structure, source, unified symbol query, lower-level navigation helpers, and status queries.
-- `src/storage/`: SQLite schema, DB access, blob storage.
-- `src/fallback/`: ripgrep and heuristic fallback paths.
-- `src/scripts/`: repository maintenance scripts such as `doctor`.
+- `.mcp.json`: repo-local stdio MCP config for dogfooding `eye` from this checkout.
+- `src/index.ts`: stdio bootstrap.
+- `src/mcp/`: MCP tool registration, schemas, and formatted text output.
+- `src/project/`: project-root detection, `sourceRoots` inference, ignore rules, and `.eye` path layout.
+- `src/indexing/`: discovery, dirty detection, parse orchestration, token lookup, and symbol-id generation.
+- `src/lang/`: tree-sitter extraction plus TS/Python semantic adapters.
+- `src/query/`: structure/source reads, unified symbol query flow, and index status summaries.
+- `src/storage/`: SQLite schema, DB helpers, and blob persistence.
+- `src/fallback/`: ripgrep-backed search and heuristic definition fallback.
+- `src/util/`: shared concurrency, hashing, path, and package-bin helpers.
+- `src/scripts/`: maintenance commands such as `doctor`.
+- `tests/`: fixture-backed unit, integration, and stdio MCP E2E coverage.
 - `.github/workflows/`: CI and heavy real-fixture validation.
-- `lefthook.yml`: local pre-commit and pre-push gates.
-- `tests/`: fixture-backed integration tests.
-- `tests/fixtures/real/`: pinned git submodules for heavy real-repository validation.
-- `.agents/knowledge/`: router-style durable project knowledge.
-- `plans/`: execution plans, with current routing status in `plans/ACTIVE.md`.
+- `.agents/knowledge/`: evergreen repository knowledge.
+- `plans/`: transient ExecPlans and active-plan routing.
 
-## Query Ownership
+## Tool Ownership
 
-- Structure and source reads live in `src/query/structure.ts` and `src/query/source.ts`.
-- `src/query/symbol.ts` owns the agent-facing `query_symbol` contract and context assembly.
-- `src/query/definitions.ts` and `src/query/references.ts` remain lower-level resolution helpers used by `src/query/symbol.ts`.
-- Index lifecycle starts in `src/indexing/indexer.ts`.
-- MCP tool exposure lives in `src/mcp/server.ts`.
+- `src/mcp/server.ts`: shipped five-tool MCP surface.
+- `src/query/structure.ts` and `src/query/source.ts`: read-only filesystem responses.
+- `src/query/symbol.ts`: `query_symbol` contract and `context` payload assembly.
+- `src/query/definitions.ts` and `src/query/references.ts`: semantic, indexed, and fallback resolution strategy.
+- `src/query/status.ts`: read-only `get_index_status` path when `cache.db` may not exist yet.
+- `src/indexing/indexer.ts`: refresh lifecycle and dirty-file coordination.
 
-## Storage Ownership
+## Runtime And Config Surface
 
-- `.eye/config.json`: portable source-root, ignore, and indexing config.
-- `.eye/fixtures-manifest.json`: committed only for repository-owned fixture projects.
-- `.eye/cache.db`: SQLite state for files, symbols, references, dependencies, dirty queue, and project status.
-- `.eye/blobs/`: content-addressed JSON payloads from indexing runs.
-- `.eye/runtime.json`: machine-local runtime metadata.
-- `.eye/tmp/`, `.eye/logs/`: local runtime support directories.
+- `.eye/config.json`: committed portable config; in this repo it seeds dogfooding with `src` and `tests`.
+- `.eye/fixtures-manifest.json`: tracked fixture metadata for repository-owned real fixtures.
+- `.eye/cache.db`, `.eye/blobs/`, `.eye/runtime.json`, `.eye/tmp/`, and `.eye/logs/`: local runtime state ignored by Git.
+- `lefthook.yml`: local `pre-commit` and `pre-push` gates.
 
 ## Tests
 
-- `tests/structure-and-source.test.ts`: direct read paths.
-- `tests/indexing-and-status.test.ts`: refresh lifecycle and symbol-id stability.
-- `tests/project-context.test.ts`: root auto-detection and config bootstrap behavior.
-- `tests/ts-navigation.test.ts`: TS/JS semantic definitions and references.
-- `tests/python-navigation.test.ts`: Python semantic definitions and references.
-- `tests/mcp-server.e2e.ts`: stdio MCP runtime and tool-surface verification.
-- `tests/mcp-server.real-fixtures.e2e.ts`: heavy stdio MCP validation against pinned real repositories, including structure/source across all four repos, scoped index status on Next.js and Django, and symbol definition/reference flow on Flask.
+- `tests/structure-and-source.test.ts`: read-only tool paths and runtime-free behavior.
+- `tests/project-context.test.ts`: root auto-detection, config bootstrap, and `sourceRoots` inference.
+- `tests/indexing-and-status.test.ts`: incremental refresh, status summaries, and `symbol_id` stability.
+- `tests/ts-navigation.test.ts` and `tests/python-navigation.test.ts`: language-specific semantic navigation.
+- `tests/mcp-server.e2e.ts`: stdio MCP surface, lazy runtime creation, scoped queries, and persisted cache behavior.
+- `tests/mcp-server.real-fixtures.e2e.ts`: pinned real-repository coverage for structure, source, status, and selected semantic flows.

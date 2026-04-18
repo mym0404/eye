@@ -1,24 +1,29 @@
 # eye Knowledge Base
 
-## Read First
+## Start Here
 
-- `project-map.md`
-- `architecture.md`
-- `business-logic/indexing-cache-query.md`
-- `operations/validation-and-hooks.md`
+- [Project map](project-map.md)
+- [Architecture](architecture.md)
+- [Indexing, cache, query](business-logic/indexing-cache-query.md)
+- [Validation and hooks](operations/validation-and-hooks.md)
+- [ExecPlan format](../../PLANS.md)
+- [Active plans](../../plans/ACTIVE.md)
 
-## Purpose
+## What Lives Here
 
-- Keep durable project knowledge out of the root `AGENTS.md`.
-- Make indexing, caching, querying, validation, and operational rules easy to locate.
-- Keep docs aligned with the actual codebase, not planned behavior.
-- Keep the knowledge base readable without turning it into a separate enforcement system.
+- This tree holds durable repository facts that change implementation or verification decisions.
+- `plans/` holds transient execution plans and status routing, not evergreen knowledge.
+- Keep one canonical explanation per topic and update it when verified behavior changes.
 
-## Update Rules
+## Canonical Topics
 
-- Update `project-map.md` when module ownership or directory roles change.
-- Update `architecture.md` when the top-down request flow changes.
-- Update `business-logic/indexing-cache-query.md` when indexing, cache schema, storage layout, or query strategy changes.
-- Update `operations/validation-and-hooks.md` when package-manager, CI, or hook flow changes.
-- Prefer one canonical explanation per topic and trim stale duplication when you find it.
-- Use lightweight spot checks when helpful, but do not add permanent knowledge-only validators or sync workflows.
+- [project-map.md](project-map.md): module ownership, runtime/config surfaces, and test map.
+- [architecture.md](architecture.md): tool surface, read-only versus index-backed flows, and runtime boundaries.
+- [business-logic/indexing-cache-query.md](business-logic/indexing-cache-query.md): `.eye` layout, indexing lifecycle, query strategy, and fallback rules.
+- [operations/validation-and-hooks.md](operations/validation-and-hooks.md): pnpm commands, Lefthook, CI, and completion gates.
+
+## Update Triggers
+
+- layout, ownership, or repo-local dogfooding entrypoint changes: [project-map.md](project-map.md)
+- root resolution, `.eye` lifecycle, indexing, `scopePath`, or query behavior changes: [architecture.md](architecture.md) and [business-logic/indexing-cache-query.md](business-logic/indexing-cache-query.md)
+- validation flow, package manager, hooks, or CI changes: [operations/validation-and-hooks.md](operations/validation-and-hooks.md)

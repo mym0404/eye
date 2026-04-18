@@ -2,46 +2,42 @@
 
 ## Project Overview
 
-`eye` is a source-browsing MCP server for large local repositories. Root `AGENTS.md` stays short and routes durable project knowledge into `.agents/knowledge/`.
+`eye` is a source-browsing MCP server for coding agents that need bounded reads, lazy project-local indexing, and symbol-aware navigation inside large local repositories.
 
-## Always-On Rules
+## Tech Stacks
 
-- Treat the root `AGENTS.md` as a router, not the main knowledge store.
-- Keep docs honest: update the relevant knowledge files when verified repository behavior changes.
-- Keep traversal, indexing, cache storage, semantic adapters, and fallback search concerns separated.
-- Preserve `.eye/config.json` as the portable config surface and respect generated-path exclusions such as `build`, `dist`, `out`, and `.eye`.
-- Keep `plans/ACTIVE.md` current when a multi-step execution plan opens or changes status.
+- TypeScript ESM on Node.js 20+.
+- Corepack-managed pnpm with Biome, Vitest, Lefthook, and GitHub Actions.
+- `.eye/` uses SQLite plus JSON blobs; navigation uses tree-sitter, the TypeScript language service, and Pyright.
 
-## Validation Commands
+## Non-Negotiables
 
-- Use Corepack-managed pnpm only.
-- Standard gate: `pnpm run doctor`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run test`, `pnpm run test:e2e`
-- Broad changes: `pnpm run validate`
-- Feature-complete or release-facing changes: `pnpm run test:coverage`, `pnpm run build`
-- Do not report completion if `pnpm run lint`, `pnpm run typecheck`, or `pnpm run test` is failing.
+- `get_project_structure`, `read_source_range`, and `get_index_status` stay read-only. They must resolve the project root without forcing `.eye/` runtime creation.
+- `query_symbol` and `refresh_index` own lazy `.eye/` initialization and must respect `.eye/config.json` `sourceRoots` and ignore rules.
+- Keep evergreen repository facts in [`.agents/knowledge/README.md`](.agents/knowledge/README.md). Keep transient execution plans in [`plans/ACTIVE.md`](plans/ACTIVE.md) and the `plans/` directory.
 
-## Knowledge Routing
+## Verification Commands
 
-Read these files before non-trivial changes:
+- `pnpm run doctor` after runtime boot, toolchain assumptions, `ripgrep`, or project-root detection changes.
+- `pnpm run lint && pnpm run typecheck && pnpm run test` after edits in indexing, query, storage, project resolution, fallback search, or shared utilities.
+- `pnpm run test:e2e` after MCP tool schema, server wiring, or end-to-end navigation behavior changes.
+- `pnpm run test:fixtures:real` after semantic adapter or real-repository navigation behavior changes.
+- `pnpm run validate && pnpm run build` before broad handoff or release-facing changes.
 
-1. `.agents/knowledge/README.md`
-2. `.agents/knowledge/project-map.md`
-3. `.agents/knowledge/architecture.md`
-4. `.agents/knowledge/business-logic/indexing-cache-query.md`
-5. `.agents/knowledge/operations/validation-and-hooks.md`
-6. `PLANS.md`
-7. `plans/ACTIVE.md`
+## Knowledge Router
 
-Update these docs when relevant:
+Read before non-trivial changes:
 
-- traversal, indexing, storage, semantic lookup, fallback search, or MCP tool behavior: `.agents/knowledge/business-logic/indexing-cache-query.md`
-- project layout or module ownership: `.agents/knowledge/project-map.md`
-- validation, CI, hooks, or package-manager flow: `.agents/knowledge/operations/validation-and-hooks.md`
+- [Knowledge index](.agents/knowledge/README.md)
+- [Project map](.agents/knowledge/project-map.md)
+- [Architecture](.agents/knowledge/architecture.md)
+- [Indexing, cache, query](.agents/knowledge/business-logic/indexing-cache-query.md)
+- [Validation and hooks](.agents/knowledge/operations/validation-and-hooks.md)
+- [ExecPlan format](PLANS.md)
+- [Active plans](plans/ACTIVE.md)
 
-## Knowledge Sync Contract
+Update when relevant:
 
-- `.agents/knowledge/` is the default home for evergreen project knowledge.
-- Root `AGENTS.md` must stay synchronized with the deeper knowledge base.
-- When repository behavior changes, update the relevant knowledge docs with it.
-- Consolidate stale or duplicated guidance instead of letting multiple copies drift.
-- Do not add dedicated knowledge-only validators, CI gates, or sync machinery as the default workflow.
+- traversal, indexing, storage, semantic lookup, fallback search, or MCP tool behavior: [`.agents/knowledge/business-logic/indexing-cache-query.md`](.agents/knowledge/business-logic/indexing-cache-query.md)
+- repository layout, tool ownership, or dogfooding entrypoints: [`.agents/knowledge/project-map.md`](.agents/knowledge/project-map.md)
+- validation, hooks, CI, or package-manager flow: [`.agents/knowledge/operations/validation-and-hooks.md`](.agents/knowledge/operations/validation-and-hooks.md)

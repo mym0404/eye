@@ -1,51 +1,43 @@
-# Validation and Hooks
+# Validation And Hooks
 
 ## Package Manager
 
 - Use Corepack-managed pnpm only.
-- The repository is pinned through `packageManager` in `package.json`.
-- If Corepack is missing on the machine, install it first, then enable it.
+- The repository pins pnpm through `packageManager` in `package.json`.
+- If Corepack is missing on the machine, install it first and then enable it.
 
-## Standard Commands
+## Command Triggers
 
-- `pnpm install`
-- `pnpm run doctor`
-- `pnpm run lint`
-- `pnpm run typecheck`
-- `pnpm run test`
-- `pnpm run test:e2e`
-- `pnpm run test:fixtures:real`
-- `pnpm run test:coverage`
-- `pnpm run build`
-- `pnpm run validate`
-- Pinned real fixtures under `tests/fixtures/real/**` are excluded from the default root lint/typecheck/test flows and only exercised through `pnpm run test:fixtures:real`.
-- Knowledge docs are maintained as normal repository docs, without a dedicated validator or sync script.
+- `pnpm install` after `package.json`, `pnpm-lock.yaml`, or runtime dependency changes.
+- `pnpm run doctor` after runtime boot, external binary assumptions (`rg`, `pyright-langserver`), storage schema entrypoints, or server startup wiring changes.
+- `pnpm run lint` after TypeScript, JSON, YAML, or config edits that should satisfy Biome.
+- `pnpm run typecheck` after public type, Zod schema, MCP contract, or cross-module API changes.
+- `pnpm run test` after indexing, query, storage, project resolution, fallback search, or shared utility changes.
+- `pnpm run test:e2e` after MCP tool registration, stdio runtime wiring, lazy `.eye` behavior, or scoped query behavior changes.
+- `pnpm run test:fixtures:real` after TS/Python semantic adapter changes or query behavior that could drift on large real repositories.
+- `pnpm run test:coverage` before release-facing handoff when code paths changed broadly.
+- `pnpm run build` after entrypoint, package surface, or export changes and before release-facing handoff.
+- `pnpm run validate` before broad handoff when a change spans multiple layers.
 
 ## Lefthook
 
-- `prepare` installs hooks automatically on dependency install.
+- `prepare` runs `lefthook install` during dependency install.
 - `pnpm exec lefthook install` restores hooks when needed.
-- `pre-commit` runs the fast gate:
-  - lint
-  - typecheck
-  - test
-- `pre-push` runs the full gate:
-  - validate
-  - build
-
-## Git Flow
-
-- Commit or push only when the user explicitly asks for it.
-- Do not report completion while leaving behind unreviewed validation failures in files you changed.
+- `pre-commit` runs `pnpm run lint`, `pnpm run typecheck`, and `pnpm run test`.
+- `pre-push` runs `pnpm run validate` and `pnpm run build`.
 
 ## CI
 
-- GitHub Actions uses Node 25.
-- CI enables Corepack, installs `ripgrep`, installs with `pnpm install --frozen-lockfile`, then runs doctor, lint, typecheck, test, explicit MCP E2E, coverage, and build.
-- The main CI workflow requires the repository secret `CODECOV_TOKEN`.
-- CI uploads the coverage artifact and sends `coverage/lcov.info` to Codecov with `disable_search: true`.
-- Real-repository fixture validation lives in `.github/workflows/real-fixtures.yml` and runs `pnpm run test:fixtures:real` with recursive submodule checkout.
+- `.github/workflows/ci.yml` runs on pushes to `main` and on pull requests.
+- CI uses Node 25, enables Corepack, installs `ripgrep`, runs `pnpm install --frozen-lockfile`, then runs `doctor`, `lint`, `typecheck`, `test`, explicit MCP E2E, coverage, and `build`.
+- CI uploads the `coverage/` artifact and sends `coverage/lcov.info` to Codecov with `disable_search: true`.
+- `.github/workflows/real-fixtures.yml` is the heavy validation job. It checks out submodules recursively and runs `pnpm run test:fixtures:real`.
+
+## Docs-Only Changes
+
+- There is no dedicated knowledge-sync validator in this repository.
+- For docs-only edits, re-read the routed documents, verify important relative links and referenced files, and avoid adding permanent validation tooling just for the knowledge tree.
 
 ## Acceptance Rule
 
-- Do not report completion unless the relevant pnpm commands have passed.
+- Do not report completion while relevant `pnpm` commands are failing.
