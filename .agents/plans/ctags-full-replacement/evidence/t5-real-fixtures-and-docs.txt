@@ -1,0 +1,28 @@
+T5 - Update docs, knowledge, and real-fixture expectations
+
+Changed files
+- README.md
+- .agents/knowledge/architecture.md
+- .agents/knowledge/business-logic/indexing-cache-query.md
+- .agents/knowledge/project-map.md
+- .agents/knowledge/operations/validation-and-hooks.md
+- tests/mcp-server.real-fixtures.e2e.ts
+
+Doc reconciliation
+- Rewrote shipped product docs to describe Universal Ctags as the required runtime prerequisite.
+- Replaced semantic/tree-sitter navigation claims with the shipped index-first plus fallback contract.
+- Documented schema-based invalidation and rebuild of old .eye/cache.db and .eye/blobs state.
+
+Heavy-fixture repair path
+- Initial command failed because real-fixture submodules were incomplete.
+- Repo-native repair attempts:
+  - git submodule update --init --recursive
+  - git submodule update --init --recursive --depth 1
+- Final fixture state confirmed with git submodule status --recursive after checkout repair.
+
+Verification
+- Command: PATH="/opt/homebrew/bin:$PATH" pnpm exec vitest run --config vitest.real-fixtures.config.ts
+- Result: PASS
+- Summary:
+  - Test Files  1 passed (1)
+  - Tests  4 passed (4)

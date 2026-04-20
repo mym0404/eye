@@ -29,7 +29,7 @@ The project matters only if it does more than wrap `grep`. The current design ai
 | --- | --- |
 | `get_project_structure` | Returns a bounded tree and skips generated paths such as `build`, `dist`, `out`, `.eye`, and similar defaults. |
 | `read_source_range` | Reads a file around a requested line with numbered output. |
-| `query_symbol` | One symbol-query surface for `definition`, `references`, and `context`. It accepts `target.by = "anchor" | "symbolId" | "symbol"`, always returns `matches`, and adds a bounded `context` block for the best definition when `action` is `context`. Resolution can come from semantic, indexed, or ripgrep-backed paths depending on query shape and backend coverage. |
+| `query_symbol` | One symbol-query surface for `definition`, `references`, and `context`. It accepts `target.by = "anchor" | "symbolId" | "symbol"`, always returns `matches`, and adds a bounded `context` block for the best definition when `action` is `context`. Resolution now comes from the persisted index first and falls back to heuristic or ripgrep-backed search when the index is not enough. |
 | `refresh_index` | Refreshes the `.eye` cache for the whole root or a narrowed scope. |
 | `get_index_status` | Reports generation, counts, and cache state. |
 
@@ -39,9 +39,8 @@ The project matters only if it does more than wrap `grep`. The current design ai
 - Lazy `.eye/` initialization under the target repository.
 - Persistent cache in `.eye/cache.db`.
 - Content-addressed sidecar blobs in `.eye/blobs/`.
-- Structural indexing with `web-tree-sitter` + wasm grammars.
-- TS/JS semantic navigation through the TypeScript language service.
-- Python navigation through a `pyright-langserver`-backed adapter, with some real-repository name lookups currently resolving through the index strategy.
+- `Universal Ctags` as the required external symbol-extraction runtime for index-backed operations.
+- Query resolution is index-first with explicit fallback search.
 - `ripgrep` for file discovery and fallback search.
 
 ## Install the Server
@@ -50,7 +49,15 @@ Requirements:
 
 - Node.js 20+
 - Corepack
+- `ctags` on `PATH`, and it must be `Universal Ctags`
 - `rg` on `PATH`
+
+Install the runtime prerequisites first:
+
+- macOS (Homebrew): `brew install universal-ctags ripgrep`
+- Ubuntu 24.04: `sudo apt-get update && sudo apt-get install --yes universal-ctags ripgrep`
+
+On macOS, the Xcode-provided `/usr/bin/ctags` is not sufficient. Make sure the Homebrew `ctags` binary comes first on `PATH`.
 
 Build `eye` once:
 
@@ -334,6 +341,7 @@ Two operational notes matter:
 - `config.json`: portable source-root, ignore, and indexing settings.
 - `runtime.json`: machine-local metadata written by the server.
 - `cache.db` and `blobs/`: generated cache state, ignored from git.
+- When the persisted index schema changes, old `.eye/cache.db` and `.eye/blobs/` are invalidated instead of migrated in place. The next index-backed operation rebuilds them.
 
 ## Tests and Fixtures
 
@@ -341,16 +349,15 @@ Two operational notes matter:
 - Six committed fixtures support CI-speed integration tests: `ts-app`, `js-app`, `python-app`, `mixed-app`, `monorepo-app`, and `root-app`.
 - `tests/fixtures/real/` contains pinned git submodules for `microsoft/TypeScript`, `vercel/next.js`, `pallets/flask`, and `django/django`.
 - `pnpm run test:fixtures:real` is the heavy real-repository suite.
-- The real-fixture suite reads structure and source from all four pinned repositories, checks scoped large-repo indexing on Next.js and Django, and runs definition/reference symbol flow on Flask.
+- The real-fixture suite reads structure and source from all four pinned repositories, checks scoped large-repo indexing on Next.js and Django, and runs definition/reference symbol flow on Flask under the index-first contract.
 - The heavy suite is intentionally separate from the default local `validate` flow and runs in its own GitHub Actions workflow.
 
 ## Limitations
 
-- Semantic coverage is currently limited to TS/JS and Python.
 - Indexing is lazy and query-triggered; there is no watch mode or background daemon.
 - Name-based lookups can still be ambiguous and may return multiple candidates.
 - `context` is bounded and optimized for agent navigation, not for dumping entire long definitions.
-- The structural index is tree-sitter based, but not yet a language-complete semantic graph.
+- The persisted index is ctags-backed, so some anchor or reference lookups can fall back to lower-confidence text search when name-only matching is all that is available.
 - The committed in-repo fixtures are small integration corpora; large OSS coverage lives in `tests/fixtures/real/` submodules.
 
 ## For Maintainers

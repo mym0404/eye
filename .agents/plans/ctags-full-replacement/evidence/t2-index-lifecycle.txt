@@ -1,0 +1,43 @@
+Task: T2 - Replace persisted index extraction with ctags
+
+Changed files:
+- src/indexing/parser.ts
+- src/indexing/indexer.ts
+- src/indexing/types.ts
+- src/storage/schema.ts
+- src/storage/database.ts
+- tests/indexing-and-status.test.ts
+
+Core changes:
+- Replaced per-file tree-sitter extraction with Universal Ctags JSON extraction in src/indexing/parser.ts.
+- Switched shipped persisted file parse source from `tree-sitter` to `ctags`.
+- Updated symbol/reference ordering in storage lookups to prefer `ctags`.
+- Bumped schema version to force cache invalidation instead of in-place migration.
+- Added blob-directory clearing on schema reset before the next index-backed refresh.
+- Added a focused regression test for outdated `.eye` schema invalidation and rebuild.
+
+Focused verification:
+- Command: pnpm exec vitest run tests/indexing-and-status.test.ts
+- Result: pass
+- Summary:
+  Test Files  1 passed (1)
+  Tests  4 passed (4)
+
+Additional safety check:
+- Command: pnpm run typecheck
+- Result: pass
+
+Pre-existing cache verification:
+- Covered by test: `invalidates an outdated cache schema and rebuilds the ctags index`
+- Simulated old state:
+  - downgraded `schema_meta.version`
+  - forced `files.parse_source = 'tree-sitter'`
+  - wrote stale blob file under `.eye/blobs/`
+- Verified outcome:
+  - next writable open reset the schema
+  - next `refreshProjectIndex` rebuilt tracked files
+  - stale blob was removed
+  - tracked files no longer reported `tree-sitter` parse source
+
+Notes:
+- `src/indexing/types.ts` still allows legacy `tree-sitter` source values for compile compatibility with untouched legacy extraction files, but the writable cache schema, parser output, and storage ordering now treat `ctags` as shipped truth.

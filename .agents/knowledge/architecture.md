@@ -33,14 +33,14 @@
 ## Query Strategy
 
 - `query_symbol` accepts `target.by = "anchor" | "symbolId" | "symbol"`.
-- `definition` resolves semantic candidates first, then indexed matches, then heuristic fallback definitions.
-- `references` resolves semantic references first, then indexed rows, then ripgrep fallback search.
+- `definition` resolves indexed candidates first, then heuristic fallback definitions.
+- `references` resolves indexed rows first, then ripgrep fallback search.
 - `context` reuses definition resolution, keeps the full `matches` list, and attaches one bounded snippet for the best definition candidate.
-- The response strategy stays honest about the winning path: `semantic`, `index`, or `fallback`.
+- The response strategy stays honest about the winning path: `index` or `fallback`.
 
-## Semantic Adapters And Fallbacks
+## Indexing And Fallbacks
 
-- `src/lang/ts/service.ts`: TypeScript language service keyed by index generation.
-- `src/lang/python/pyright-client.ts`: Pyright stdio client keyed by index generation.
-- `src/lang/tree-sitter/`: structural extraction for symbols, references, and dependencies during indexing.
+- `src/indexing/parser.ts`: Universal Ctags JSON extraction plus lightweight dependency heuristics during indexing.
+- `src/lang/ts/service.ts` and `src/lang/python/pyright-client.ts`: legacy adapters no longer used in the shipped query path.
+- `src/lang/tree-sitter/`: legacy extraction code no longer used in the shipped persisted index path.
 - `src/fallback/ripgrep.ts`: file discovery and low-confidence text-search fallback.

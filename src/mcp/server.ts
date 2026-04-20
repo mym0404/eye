@@ -79,7 +79,7 @@ const symbolQueryMatchSchema: z.ZodType<SymbolQueryMatch> = z.object({
   language: z.enum(["javascript", "typescript", "python", "unknown"]),
   context: z.string().optional(),
   confidence: z.enum(["exact", "high", "medium", "low"]),
-  source: z.enum(["semantic", "index", "fallback"]),
+  source: z.enum(["index", "fallback"]),
 })
 
 const symbolQueryContextSchema: z.ZodType<SymbolQueryContext> = z.object({
@@ -152,7 +152,7 @@ export const createEyeServer = () => {
         logging: {},
       },
       instructions:
-        "Use bounded repository reads. Resolve a symbol once, then reuse symbolId with query_symbol for exact navigation. The server maintains a lazy project-local .eye cache for semantic and structural queries.",
+        "Use bounded repository reads. Resolve a symbol once, then reuse symbolId with query_symbol for exact navigation. The server maintains a lazy project-local .eye cache for index-backed and fallback queries.",
     },
   )
 
@@ -275,7 +275,7 @@ export const createEyeServer = () => {
     {
       title: "Query Symbol",
       description:
-        "Resolve symbol definitions, references, or definition context using lazy indexing, semantic backends, and fallback search.",
+        "Resolve symbol definitions, references, or definition context using lazy indexing and fallback search.",
       inputSchema: z.object({
         projectRoot: z.string().optional(),
         target: symbolQueryTargetSchema,
@@ -291,7 +291,7 @@ export const createEyeServer = () => {
       outputSchema: z.object({
         projectRoot: z.string(),
         action: z.enum(["definition", "references", "context"]),
-        strategy: z.enum(["semantic", "index", "fallback"]),
+        strategy: z.enum(["index", "fallback"]),
         indexedGeneration: z.number().int().min(0),
         truncated: z.boolean(),
         matches: z.array(symbolQueryMatchSchema),

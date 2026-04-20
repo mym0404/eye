@@ -17,7 +17,7 @@ afterEach(async () => {
 })
 
 describe("TypeScript navigation", () => {
-  it("resolves semantic definitions from an anchor", async () => {
+  it("resolves indexed definitions from an anchor", async () => {
     const fixture = await createTempFixtureProject("ts-app")
     cleanups.push(fixture.cleanup)
 
@@ -48,7 +48,7 @@ describe("TypeScript navigation", () => {
         maxResults: 10,
       })
 
-      expect(output.strategy).toBe("semantic")
+      expect(output.strategy).toBe("index")
       expect(output.matches[0]?.filePath).toBe("src/utils/helper.ts")
       expect(output.matches[0]?.name).toBe("helper")
     } finally {
@@ -56,7 +56,7 @@ describe("TypeScript navigation", () => {
     }
   })
 
-  it("resolves semantic references from a symbol id", async () => {
+  it("resolves references from a symbol id without semantic backends", async () => {
     const fixture = await createTempFixtureProject("ts-app")
     cleanups.push(fixture.cleanup)
 
@@ -87,6 +87,7 @@ describe("TypeScript navigation", () => {
       const symbolId = definition.matches[0]?.symbolId
 
       expect(symbolId).toBeTruthy()
+      expect(definition.strategy).toBe("index")
 
       const references = await querySymbol({
         context,
@@ -100,6 +101,7 @@ describe("TypeScript navigation", () => {
         includeDeclaration: false,
       })
 
+      expect(references.strategy).toBe("fallback")
       expect(
         references.matches.some(
           (candidate) => candidate.filePath === "src/main.ts",
@@ -145,8 +147,9 @@ describe("TypeScript navigation", () => {
         maxLines: 20,
       })
 
+      expect(output.strategy).toBe("index")
       expect(output.matches[0]?.filePath).toBe("src/utils/helper.ts")
-      expect(output.context?.bodyAvailable).toBe(true)
+      expect(output.context?.bodyAvailable).toBe(false)
       expect(output.context?.signatureLine?.text).toContain(
         "export const helper",
       )

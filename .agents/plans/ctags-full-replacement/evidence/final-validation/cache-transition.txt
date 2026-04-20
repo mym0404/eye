@@ -1,0 +1,9 @@
+
+ RUN  v4.1.4 /Users/mj/projects/eye
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 3 skipped (4)
+   Start at  13:22:04
+   Duration  306ms (transform 95ms, setup 0ms, import 126ms, tests 72ms, environment 0ms)
+

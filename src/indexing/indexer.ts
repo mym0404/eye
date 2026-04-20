@@ -1,4 +1,4 @@
-import { readFile, stat } from "node:fs/promises"
+import { mkdir, readFile, rm, stat } from "node:fs/promises"
 import path from "node:path"
 import { listFilesWithRipgrep } from "../fallback/ripgrep.js"
 import type { EyeProjectContext } from "../project/context.js"
@@ -86,6 +86,14 @@ export const refreshProjectIndex = async ({
   database: EyeDatabase
   scopePath?: string
 }): Promise<RefreshResult> => {
+  if (database.consumeSchemaResetFlag()) {
+    await rm(context.paths.blobsDir, {
+      recursive: true,
+      force: true,
+    })
+    await mkdir(context.paths.blobsDir, { recursive: true })
+  }
+
   const trackedFiles = database.listTrackedFiles({ scopePath })
   const trackedMap = new Map(
     trackedFiles.map((row) => [row.relative_path, row]),

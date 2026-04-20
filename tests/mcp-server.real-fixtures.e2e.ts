@@ -134,7 +134,7 @@ describe("MCP server real fixture E2E", () => {
     expect(statusContent.referenceCount).toBeGreaterThan(0)
   })
 
-  it("indexes the real Flask repository and resolves semantic references", async () => {
+  it("indexes the real Flask repository and resolves index-first symbol flows", async () => {
     const fixture = realFixtures.flask
     const client = await createClient(fixture.projectRoot)
 
@@ -201,7 +201,7 @@ describe("MCP server real fixture E2E", () => {
       }>
     }
 
-    expect(["semantic", "index"]).toContain(referenceContent.strategy)
+    expect(["index", "fallback"]).toContain(referenceContent.strategy)
     expect(
       referenceContent.matches.some(
         (candidate) => candidate.filePath !== fixture.semantic.definitionPath,

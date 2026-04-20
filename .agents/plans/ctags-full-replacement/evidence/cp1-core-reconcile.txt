@@ -1,0 +1,31 @@
+Task: CP1 - Reconcile the core rewrite invariants
+
+Verification commands:
+- PATH="/opt/homebrew/bin:$PATH" pnpm run doctor
+- PATH="/opt/homebrew/bin:$PATH" pnpm run typecheck
+- PATH="/opt/homebrew/bin:$PATH" pnpm exec vitest run tests/indexing-and-status.test.ts tests/ts-navigation.test.ts tests/python-navigation.test.ts
+- PATH="/opt/homebrew/bin:$PATH" pnpm exec tsx -e '(async () => { ... pre-existing .eye refresh/status check ... })()'
+
+Results:
+- doctor: pass
+- typecheck: pass
+- focused vitest: pass
+  - Test Files  3 passed (3)
+  - Tests  10 passed (10)
+
+Pre-existing `.eye` verification:
+- Simulated a stale cache by downgrading `schema_meta.version` after an initial refresh.
+- Reopened the writable database and ran `refreshProjectIndex`.
+- Observed:
+  - refresh.generation = 1
+  - refresh.changedFiles = 3
+  - status.indexGeneration = 1
+  - status.status = ready
+  - status.dirtyCount = 0
+
+Diff-scope check:
+- `git diff --name-only` stayed inside the expected runtime/index/query/test/doc surfaces.
+- No changes landed in read-only MCP tool wiring files such as `src/mcp/server.ts`, `src/query/status.ts`, or source-range readers during CP1.
+
+Conclusion:
+- The runtime prerequisite contract, ctags-backed persisted index, and index-first local query behavior are aligned enough to proceed to MCP contract rewrites.

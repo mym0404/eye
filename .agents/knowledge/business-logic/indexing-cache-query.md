@@ -13,8 +13,8 @@
 - `refresh_index`: `withDatabase` -> `refreshProjectIndex`.
 - `get_index_status`: `loadProjectContext({ ensureRuntime: false })` -> `EyeDatabase.openExistingReadOnly()` -> current status or an idle zero-value summary.
 - `query_symbol`:
-  - `action: definition` -> refresh -> semantic lookup -> indexed lookup -> heuristic fallback definitions.
-  - `action: references` -> refresh -> semantic lookup -> indexed lookup -> ripgrep fallback.
+  - `action: definition` -> refresh -> indexed lookup -> heuristic fallback definitions.
+  - `action: references` -> refresh -> indexed lookup -> ripgrep fallback.
   - `action: context` -> refresh -> definition resolution -> one bounded source snippet around the best definition.
 
 ## Indexing Flow
@@ -28,7 +28,7 @@
 5. Compare current `size` and `mtimeMs` against tracked file rows.
 6. Split files into changed, reused, and removed sets.
 7. For changed files, read text and call `indexFileContent`.
-8. Parse with tree-sitter when a grammar exists; otherwise persist `fallback-text` records.
+8. Parse with Universal Ctags JSON output when possible; otherwise persist `fallback-text` records.
 9. Hash the blob payload and persist it through `EyeBlobStore`.
 10. Commit files, symbols, references, dependencies, and project status through `EyeDatabase.commitIndexRun`.
 
@@ -51,6 +51,7 @@
 - `.eye/cache.db`: SQLite cache.
 - `.eye/blobs/<hash>.json`: content-addressed index payload.
 - `.eye/tmp/`, `.eye/logs/`: local runtime support directories.
+- When `schema_meta.version` changes, the writable open path invalidates the existing cache instead of migrating it in place; the next index-backed refresh rebuilds both DB rows and blob payloads.
 
 ### SQLite Tables
 
@@ -64,8 +65,8 @@
 
 ## Parse Sources
 
-- `tree-sitter`: preferred structural index source.
-- `fallback-text`: used when no grammar exists or parsing fails.
+- `ctags`: preferred persisted index source.
+- `fallback-text`: used when ctags extraction fails or the file is unsupported.
 
 ## Query Strategy Details
 
@@ -77,14 +78,13 @@
 
 ### Definition
 
-- Anchor-based TS/JS lookups use the TypeScript language service.
-- Anchor-based Python lookups use Pyright.
-- When semantic lookup fails or the request starts from a plain symbol, query indexed `symbols` rows by name.
+- Anchor lookups extract a token from the current line and try indexed `symbols` rows first.
+- Plain-symbol and `symbolId` lookups stay on indexed symbol rows.
 - Remaining low-confidence coverage comes from heuristic fallback definitions.
 
 ### References
 
-- Anchor or `symbolId` lookups prefer semantic references from TS/JS or Python backends.
+- `symbolId` lookups still anchor on the exact indexed definition row.
 - Indexed references come from `references_idx`.
 - Remaining budget uses ripgrep with `fixedStrings: true`, `wordMatch: true`, configured ignore globs, and search roots resolved from `sourceRoots` plus `scopePath`.
 

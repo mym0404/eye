@@ -1,0 +1,37 @@
+Task: T1 - Codify the ctags runtime contract
+
+Changed files:
+- src/scripts/doctor.ts
+- .github/workflows/ci.yml
+- .github/workflows/real-fixtures.yml
+- README.md
+
+Doctor verification:
+- Command: PATH="/opt/homebrew/bin:$PATH" pnpm run doctor
+- Result: pass
+- Output: doctor: ok
+
+Detected ctags binary:
+- Command: PATH="/opt/homebrew/bin:$PATH" which ctags
+- Result: /opt/homebrew/bin/ctags
+
+Detected ctags version:
+- Command: PATH="/opt/homebrew/bin:$PATH" ctags --version | head -n 2
+- Result:
+  Universal Ctags 6.2.1, Copyright (C) 2015-2025 Universal Ctags Team
+  Universal Ctags is derived from Exuberant Ctags.
+
+CI runtime prerequisite contract:
+- Runner: ubuntu-24.04
+- Install command: sudo apt-get update && sudo apt-get install --yes ripgrep universal-ctags
+- Expected binary name in doctor: ctags
+
+Environment repair used during local verification:
+- Problem: macOS resolved /usr/bin/ctags first, which is BSD ctags from Xcode and fails `ctags --version`.
+- Repair: brew install universal-ctags
+- Verification path override: PATH="/opt/homebrew/bin:$PATH"
+
+README alignment:
+- Requirements now call out Universal Ctags explicitly.
+- macOS and Ubuntu install commands are documented.
+- README no longer describes pyright or tree-sitter as required shipped runtime prerequisites.

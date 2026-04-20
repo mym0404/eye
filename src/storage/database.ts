@@ -77,6 +77,7 @@ export class EyeDatabase {
   readonly connection: Database.Database
   readonly projectRoot: string
   readonly readonlyMode: boolean
+  private schemaResetPerformed = false
 
   constructor({
     databasePath,
@@ -138,14 +139,23 @@ export class EyeDatabase {
       return undefined
     }
 
-    return new EyeDatabase({
+    const database = new EyeDatabase({
       databasePath,
       projectRoot,
       readonly: true,
     })
+
+    if (!database.hasCurrentSchema()) {
+      database.close()
+      return undefined
+    }
+
+    return database
   }
 
   private resetSchema = () => {
+    this.schemaResetPerformed = true
+
     for (const statement of dropSchemaStatements) {
       this.connection.exec(statement)
     }
@@ -159,7 +169,7 @@ export class EyeDatabase {
       .run(CURRENT_SCHEMA_VERSION, now())
   }
 
-  ensureSchema = () => {
+  private getSchemaVersion = () => {
     const hasSchemaMeta = this.connection
       .prepare(
         "select name from sqlite_master where type = 'table' and name = 'schema_meta'",
@@ -167,8 +177,7 @@ export class EyeDatabase {
       .get() as { name?: string } | undefined
 
     if (!hasSchemaMeta) {
-      this.resetSchema()
-      return
+      return undefined
     }
 
     const row = this.connection
@@ -177,7 +186,21 @@ export class EyeDatabase {
       )
       .get() as { version?: number } | undefined
 
-    if (row?.version === CURRENT_SCHEMA_VERSION) {
+    return row?.version
+  }
+
+  private hasCurrentSchema = () =>
+    this.getSchemaVersion() === CURRENT_SCHEMA_VERSION
+
+  ensureSchema = () => {
+    const schemaVersion = this.getSchemaVersion()
+
+    if (schemaVersion === undefined) {
+      this.resetSchema()
+      return
+    }
+
+    if (schemaVersion === CURRENT_SCHEMA_VERSION) {
       for (const statement of schemaStatements) {
         this.connection.exec(statement)
       }
@@ -186,6 +209,12 @@ export class EyeDatabase {
     }
 
     this.resetSchema()
+  }
+
+  consumeSchemaResetFlag = () => {
+    const value = this.schemaResetPerformed
+    this.schemaResetPerformed = false
+    return value
   }
 
   ensureProject = () => {
@@ -724,7 +753,7 @@ export class EyeDatabase {
             from symbols
             where project_root = ? and name = ?
             order by
-              case source when 'semantic' then 0 when 'tree-sitter' then 1 else 2 end asc,
+              case source when 'ctags' then 0 else 1 end asc,
               relative_path asc,
               line asc
             limit ?
@@ -772,7 +801,7 @@ export class EyeDatabase {
             from references_idx
             where project_root = ? and name = ?
             order by
-              case source when 'semantic' then 0 when 'tree-sitter' then 1 else 2 end asc,
+              case source when 'ctags' then 0 else 1 end asc,
               relative_path asc,
               line asc
             limit ?

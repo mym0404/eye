@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@v4
@@ -23,8 +23,8 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
-      - name: Install ripgrep
-        run: sudo apt-get update && sudo apt-get install --yes ripgrep
+      - name: Install runtime prerequisites
+        run: sudo apt-get update && sudo apt-get install --yes ripgrep universal-ctags
 
       - name: Install
         run: pnpm install --frozen-lockfile

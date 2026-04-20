@@ -1,0 +1,99 @@
+
+> eye@0.1.0 validate /Users/mj/projects/eye
+> pnpm run doctor && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run test:e2e && pnpm run test:coverage && pnpm run build
+
+
+> eye@0.1.0 doctor /Users/mj/projects/eye
+> tsx src/scripts/doctor.ts
+
+doctor: ok
+
+> eye@0.1.0 lint /Users/mj/projects/eye
+> biome check .
+
+Checked 69 files in 57ms. No fixes applied.
+
+> eye@0.1.0 typecheck /Users/mj/projects/eye
+> tsc --noEmit -p tsconfig.json
+
+
+> eye@0.1.0 test /Users/mj/projects/eye
+> vitest run
+
+
+ RUN  v4.1.4 /Users/mj/projects/eye
+
+
+ Test Files  5 passed (5)
+      Tests  19 passed (19)
+   Start at  13:21:27
+   Duration  492ms (transform 406ms, setup 0ms, import 554ms, tests 753ms, environment 0ms)
+
+
+> eye@0.1.0 test:e2e /Users/mj/projects/eye
+> vitest run --config vitest.e2e.config.ts
+
+
+ RUN  v4.1.4 /Users/mj/projects/eye
+
+
+ Test Files  1 passed (1)
+      Tests  11 passed (11)
+   Start at  13:21:28
+   Duration  6.23s (transform 42ms, setup 0ms, import 166ms, tests 5.96s, environment 0ms)
+
+
+> eye@0.1.0 test:coverage /Users/mj/projects/eye
+> vitest run --config vitest.coverage.config.ts --coverage
+
+
+ RUN  v4.1.4 /Users/mj/projects/eye
+      Coverage enabled with v8
+
+
+ Test Files  6 passed (6)
+      Tests  30 passed (30)
+   Start at  13:21:35
+   Duration  6.19s (transform 503ms, setup 0ms, import 784ms, tests 6.80s, environment 0ms)
+
+ % Coverage report from v8
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   80.02 |     58.2 |   83.06 |   80.02 |                   
+ fallback          |    82.1 |    60.78 |      76 |    82.6 |                   
+  ripgrep.ts       |   79.76 |    60.78 |      70 |   80.24 | ...69,210,214,228 
+ indexing          |      80 |    54.02 |   82.05 |   80.31 |                   
+  indexer.ts       |   91.17 |       76 |   86.66 |   92.53 | 129,227-229,254   
+  language.ts      |   55.55 |    26.31 |      50 |   55.55 | 24,28-46,53       
+  parser.ts        |   78.57 |    53.48 |   84.21 |   78.35 | ...35,280,388,410 
+ project           |   86.78 |    67.67 |   96.96 |   86.54 |                   
+  context.ts       |     100 |    94.44 |     100 |     100 | 101               
+  ignore.ts        |   92.85 |       75 |     100 |   91.66 | 30                
+  root.ts          |   89.28 |    74.19 |     100 |   89.28 | ...31,152,170,176 
+  source-roots.ts  |   77.46 |    52.17 |   92.85 |   77.46 | ...00,170,184-203 
+ query             |   71.35 |    56.41 |   76.31 |   71.21 |                   
+  definitions.ts   |      70 |    63.63 |   71.42 |      70 | ...99-101,190-202 
+  references.ts    |      75 |    70.27 |      80 |      75 | ...28,161,206-218 
+  source.ts        |   61.76 |    28.57 |   66.66 |   61.76 | ...,72,81,137-153 
+  structure.ts     |      72 |    55.88 |   66.66 |      72 | ...81,109,149-173 
+  symbol.ts        |   75.51 |    51.02 |   88.88 |      75 | ...34,149,300-330 
+ storage           |   80.12 |    49.01 |   79.48 |   80.24 |                   
+  blob-store.ts    |    92.3 |      100 |     100 |   91.66 | 25                
+  database.ts      |   78.66 |    49.01 |   77.14 |   78.91 | ...94,765,813,837 
+ util              |   88.09 |    61.53 |     100 |    87.5 |                   
+  concurrency.ts   |   91.66 |       50 |     100 |   91.66 | 11                
+  package-bin.ts   |      70 |       50 |     100 |      70 | 23,26-29          
+  path.ts          |   94.44 |    71.42 |     100 |   94.11 | 38                
+-------------------|---------|----------|---------|---------|-------------------
+
+=============================== Coverage summary ===============================
+Statements   : 80.02% ( 697/871 )
+Branches     : 58.2% ( 266/457 )
+Functions    : 83.06% ( 152/183 )
+Lines        : 80.02% ( 685/856 )
+================================================================================
+
+> eye@0.1.0 build /Users/mj/projects/eye
+> tsc -p tsconfig.build.json
+

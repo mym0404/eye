@@ -1,14 +1,11 @@
 #!/usr/bin/env node
 
 import { execFile } from "node:child_process"
-import { constants } from "node:fs"
-import { access } from "node:fs/promises"
 import { promisify } from "node:util"
 
 import Database from "better-sqlite3"
 
 import { CURRENT_SCHEMA_VERSION } from "../storage/schema.js"
-import { resolvePackageBin } from "../util/package-bin.js"
 
 const execFileAsync = promisify(execFile)
 
@@ -28,14 +25,25 @@ const checks = [
     },
   },
   {
-    name: "pyright-langserver",
+    name: "ctags",
     run: async () => {
-      const executablePath = resolvePackageBin({
-        packageName: "pyright",
-        binName: "pyright-langserver",
-      })
+      let versionOutput = ""
 
-      await access(executablePath, constants.R_OK)
+      try {
+        const { stdout, stderr } = await execFileAsync("ctags", ["--version"])
+        versionOutput = `${stdout}\n${stderr}`.trim()
+      } catch (error) {
+        throw new Error(
+          "Universal Ctags is required on PATH as `ctags`. Install it with `brew install universal-ctags` or `sudo apt-get install --yes universal-ctags` and make sure that binary shadows BSD ctags.",
+          { cause: error },
+        )
+      }
+
+      if (!versionOutput.includes("Universal Ctags")) {
+        throw new Error(
+          "Universal Ctags is required on PATH as `ctags`. The detected `ctags` binary is not Universal Ctags.",
+        )
+      }
     },
   },
   {

@@ -7,7 +7,7 @@
 - `src/mcp/`: MCP tool registration, schemas, and formatted text output.
 - `src/project/`: project-root detection, `sourceRoots` inference, ignore rules, and `.eye` path layout.
 - `src/indexing/`: discovery, dirty detection, parse orchestration, token lookup, and symbol-id generation.
-- `src/lang/`: tree-sitter extraction plus TS/Python semantic adapters.
+- `src/lang/`: legacy tree-sitter extraction and TS/Python semantic adapters kept outside the shipped query path.
 - `src/query/`: structure/source reads, unified symbol query flow, and index status summaries.
 - `src/storage/`: SQLite schema, DB helpers, and blob persistence.
 - `src/fallback/`: ripgrep-backed search and heuristic definition fallback.
@@ -23,7 +23,7 @@
 - `src/mcp/server.ts`: shipped five-tool MCP surface.
 - `src/query/structure.ts` and `src/query/source.ts`: read-only filesystem responses.
 - `src/query/symbol.ts`: `query_symbol` contract and `context` payload assembly.
-- `src/query/definitions.ts` and `src/query/references.ts`: semantic, indexed, and fallback resolution strategy.
+- `src/query/definitions.ts` and `src/query/references.ts`: index-first plus fallback resolution strategy.
 - `src/query/status.ts`: read-only `get_index_status` path when `cache.db` may not exist yet.
 - `src/indexing/indexer.ts`: refresh lifecycle and dirty-file coordination.
 
@@ -39,6 +39,6 @@
 - `tests/structure-and-source.test.ts`: read-only tool paths and runtime-free behavior.
 - `tests/project-context.test.ts`: root auto-detection, config bootstrap, and `sourceRoots` inference.
 - `tests/indexing-and-status.test.ts`: incremental refresh, status summaries, and `symbol_id` stability.
-- `tests/ts-navigation.test.ts` and `tests/python-navigation.test.ts`: language-specific semantic navigation.
+- `tests/ts-navigation.test.ts` and `tests/python-navigation.test.ts`: language-specific index-first navigation.
 - `tests/mcp-server.e2e.ts`: stdio MCP surface, lazy runtime creation, scoped queries, and persisted cache behavior.
-- `tests/mcp-server.real-fixtures.e2e.ts`: pinned real-repository coverage for structure, source, status, and selected semantic flows.
+- `tests/mcp-server.real-fixtures.e2e.ts`: pinned real-repository coverage for structure, source, status, and selected index-first symbol flows.

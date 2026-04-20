@@ -1,0 +1,13 @@
+
+> eye@0.1.0 test:fixtures:real /Users/mj/projects/eye
+> vitest run --config vitest.real-fixtures.config.ts
+
+
+ RUN  v4.1.4 /Users/mj/projects/eye
+
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  13:21:48
+   Duration  5.44s (transform 34ms, setup 0ms, import 111ms, tests 5.21s, environment 0ms)
+

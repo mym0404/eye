@@ -1,0 +1,30 @@
+Task: T4 - Rewrite the MCP contract and stdio E2E
+
+Changed files:
+- src/mcp/server.ts
+- tests/mcp-server.e2e.ts
+
+Core changes:
+- MCP `query_symbol` output schema now advertises only `index | fallback` for `strategy` and per-match `source`.
+- Server instructions and tool description no longer promise semantic backends.
+- E2E expectations now validate:
+  - `get_project_structure` stays read-only
+  - `read_source_range` stays read-only
+  - `get_index_status` stays read-only before lazy index creation
+  - TS/Python symbol queries follow the new `index` / `fallback` contract
+
+Verification:
+- Command: PATH="/opt/homebrew/bin:$PATH" pnpm run typecheck
+- Result: pass
+
+- Attempted command: PATH="/opt/homebrew/bin:$PATH" pnpm exec vitest run tests/mcp-server.e2e.ts
+- Result: not executable in this repo because default Vitest include patterns do not load `.e2e.ts`
+
+- Effective command: PATH="/opt/homebrew/bin:$PATH" pnpm exec vitest run --config vitest.e2e.config.ts tests/mcp-server.e2e.ts
+- Result: pass
+- Summary:
+  Test Files  1 passed (1)
+  Tests  11 passed (11)
+
+Notes:
+- `src/query/symbol.ts` still carries a temporary wider compatibility type until later contract cleanup, but the MCP schema exposed by `src/mcp/server.ts` no longer advertises `semantic`.

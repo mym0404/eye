@@ -17,7 +17,7 @@ afterEach(async () => {
 })
 
 describe("Python navigation", () => {
-  it("resolves definitions through pyright", async () => {
+  it("resolves indexed definitions from an anchor", async () => {
     const fixture = await createTempFixtureProject("python-app")
     cleanups.push(fixture.cleanup)
 
@@ -48,7 +48,7 @@ describe("Python navigation", () => {
         maxResults: 10,
       })
 
-      expect(output.strategy).toBe("semantic")
+      expect(output.strategy).toBe("index")
       expect(output.matches[0]?.filePath).toBe("app/helpers.py")
       expect(output.matches[0]?.name).toBe("greet")
     } finally {
@@ -56,7 +56,7 @@ describe("Python navigation", () => {
     }
   })
 
-  it("resolves references through pyright", async () => {
+  it("resolves references from a symbol id without semantic backends", async () => {
     const fixture = await createTempFixtureProject("python-app")
     cleanups.push(fixture.cleanup)
 
@@ -87,6 +87,7 @@ describe("Python navigation", () => {
       const symbolId = definition.matches[0]?.symbolId
 
       expect(symbolId).toBeTruthy()
+      expect(definition.strategy).toBe("index")
 
       const references = await querySymbol({
         context,
@@ -100,6 +101,7 @@ describe("Python navigation", () => {
         includeDeclaration: false,
       })
 
+      expect(references.strategy).toBe("fallback")
       expect(
         references.matches.some(
           (candidate) => candidate.filePath === "app/main.py",
@@ -145,8 +147,9 @@ describe("Python navigation", () => {
         maxLines: 20,
       })
 
+      expect(output.strategy).toBe("index")
       expect(output.matches[0]?.filePath).toBe("app/helpers.py")
-      expect(output.context?.bodyAvailable).toBe(true)
+      expect(output.context?.bodyAvailable).toBe(false)
       expect(output.context?.signatureLine?.text).toContain("def greet")
       expect(
         output.context?.lines.some((line) =>

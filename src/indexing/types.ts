@@ -1,6 +1,6 @@
 export type LanguageId = "javascript" | "typescript" | "python" | "unknown"
 
-export type RecordSource = "semantic" | "tree-sitter" | "fallback" | "index"
+export type RecordSource = "ctags" | "tree-sitter" | "fallback"
 
 export type SymbolKind =
   | "class"
@@ -22,7 +22,7 @@ export type NormalizedFileRecord = {
   mtimeMs: number
   contentHash: string
   blobHash?: string
-  parseSource: "tree-sitter" | "fallback-text"
+  parseSource: "ctags" | "tree-sitter" | "fallback-text"
 }
 
 export type NormalizedSymbolRecord = {
@@ -66,7 +66,7 @@ export type IndexedFileData = {
     schemaVersion: number
     relativePath: string
     language: LanguageId
-    parseSource: "tree-sitter" | "fallback-text"
+    parseSource: "ctags" | "tree-sitter" | "fallback-text"
     symbols: Array<{
       symbolId: string
       name: string

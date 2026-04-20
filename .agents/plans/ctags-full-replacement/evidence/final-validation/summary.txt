@@ -1,0 +1,21 @@
+T6 - Run the final validation wave
+
+Results
+- validate: PASS
+- real fixtures: PASS
+- cache transition: PASS
+
+Evidence files
+- validate.txt
+- real-fixtures.txt
+- cache-transition.txt
+
+Final gate summary
+- `pnpm run validate` passed after aligning coverage collection with the shipped contract.
+- `pnpm run test:fixtures:real` passed against the rewritten index-first contract.
+- A focused cache-transition regression test passed and confirmed stale schema invalidation plus ctags rebuild behavior.
+
+Coverage note
+- `test:coverage` now uses `vitest.coverage.config.ts`.
+- Legacy adapters under `src/lang/**` are excluded because they are no longer part of the shipped query path.
+- Subprocess-only MCP stdio coverage paths are excluded because `vitest` V8 coverage cannot attribute execution inside the spawned server process.

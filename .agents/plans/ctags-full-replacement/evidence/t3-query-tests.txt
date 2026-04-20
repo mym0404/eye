@@ -1,0 +1,34 @@
+Task: T3 - Rewrite query flow to index-first
+
+Changed files:
+- src/query/definitions.ts
+- src/query/references.ts
+- src/query/symbol.ts
+- tests/ts-navigation.test.ts
+- tests/python-navigation.test.ts
+
+Core changes:
+- Removed semantic backend imports from the query path.
+- Definition lookup now resolves through indexed symbol rows first, then heuristic fallback.
+- Reference lookup now resolves through indexed reference rows first, then ripgrep fallback.
+- `symbolId` lookups remain exact for definitions and continue to seed follow-up reference queries.
+- Focused TS/Python tests now assert `index` or `fallback` behavior instead of `semantic`.
+
+Focused verification:
+- Command: pnpm exec vitest run tests/ts-navigation.test.ts tests/python-navigation.test.ts
+- Result: pass
+- Summary:
+  Test Files  2 passed (2)
+  Tests  6 passed (6)
+
+Additional safety check:
+- Command: pnpm run typecheck
+- Result: pass
+
+Semantic path audit:
+- Command: rg -n "getPyrightClient|getTsDefinitionsAt|getTsReferencesAt|semantic" src/query tests/ts-navigation.test.ts tests/python-navigation.test.ts
+- Result: no semantic backend imports remained in `src/query`; only test description text mentioned semantic removal.
+
+Compatibility note:
+- `src/query/symbol.ts` still allows `semantic` in the internal result type for temporary compatibility with `src/mcp/server.ts`.
+- Runtime query implementations in `src/query/definitions.ts` and `src/query/references.ts` now emit only `index` or `fallback`.

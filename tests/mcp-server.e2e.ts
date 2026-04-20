@@ -172,7 +172,7 @@ describe("MCP server E2E", () => {
     expect(sourceContent.lines[0]?.text).toContain("import { buildUser }")
   })
 
-  it("keeps read-only tools runtime-free and lazily creates .eye for index-backed tools", async () => {
+  it("keeps get_project_structure, read_source_range, and get_index_status runtime-free before lazy indexing", async () => {
     const fixture = await createTempFixtureProject("ts-app")
     cleanups.push(fixture.cleanup)
 
@@ -207,8 +207,22 @@ describe("MCP server E2E", () => {
         maxLines: 5,
       },
     })
+    const status = await client.callTool({
+      name: "get_index_status",
+      args: {
+        projectRoot: fixture.projectRoot,
+      },
+    })
+    const statusContent = status.structuredContent as {
+      status: string
+      fileCount: number
+      symbolCount: number
+    }
 
     expect(await pathExists(eyeDir)).toBe(false)
+    expect(statusContent.status).toBe("idle")
+    expect(statusContent.fileCount).toBe(0)
+    expect(statusContent.symbolCount).toBe(0)
 
     const definitions = await client.callTool({
       name: "query_symbol",
@@ -321,7 +335,7 @@ describe("MCP server E2E", () => {
       }>
     }
 
-    expect(definitionContent.strategy).toBe("semantic")
+    expect(definitionContent.strategy).toBe("index")
     expect(definitionContent.matches[0]?.filePath).toBe("src/utils/helper.ts")
     expect(definitionContent.matches[0]?.name).toBe("helper")
     const tsSymbolId = definitionContent.matches[0]?.symbolId
@@ -348,7 +362,7 @@ describe("MCP server E2E", () => {
       }>
     }
 
-    expect(referenceContent.strategy).toBe("semantic")
+    expect(referenceContent.strategy).toBe("fallback")
     expect(
       referenceContent.matches.some(
         (candidate) => candidate.filePath === "src/main.ts",
@@ -383,13 +397,13 @@ describe("MCP server E2E", () => {
     }
 
     expect(contextContent.matches[0]?.filePath).toBe("src/utils/helper.ts")
-    expect(contextContent.context?.bodyAvailable).toBe(true)
+    expect(contextContent.context?.bodyAvailable).toBe(false)
     expect(contextContent.context?.signatureLine?.text).toContain(
       "export const helper",
     )
   })
 
-  it("resolves Python definitions and references through MCP tools", async () => {
+  it("resolves Python definitions and references through the index-first MCP contract", async () => {
     const fixture = await createTempFixtureProject("python-app")
     cleanups.push(fixture.cleanup)
 
@@ -421,7 +435,7 @@ describe("MCP server E2E", () => {
       }>
     }
 
-    expect(definitionContent.strategy).toBe("semantic")
+    expect(definitionContent.strategy).toBe("index")
     expect(definitionContent.matches[0]?.filePath).toBe("app/helpers.py")
     expect(definitionContent.matches[0]?.name).toBe("greet")
     const pythonSymbolId = definitionContent.matches[0]?.symbolId
@@ -448,7 +462,7 @@ describe("MCP server E2E", () => {
       }>
     }
 
-    expect(referenceContent.strategy).toBe("semantic")
+    expect(referenceContent.strategy).toBe("fallback")
     expect(
       referenceContent.matches.some(
         (candidate) => candidate.filePath === "app/main.py",
