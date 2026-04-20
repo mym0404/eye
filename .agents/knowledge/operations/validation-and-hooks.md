@@ -25,7 +25,7 @@
 - `prepare` runs `lefthook install` during dependency install.
 - `pnpm exec lefthook install` restores hooks when needed.
 - `pre-commit` runs `pnpm run lint`, `pnpm run typecheck`, and `pnpm run test`.
-- `pre-push` runs `pnpm run validate`, `pnpm docs:check`, and `pnpm run build`.
+- There is no `pre-push` hook. Push-time validation runs only when invoked explicitly or in CI.
 
 ## CI
 
