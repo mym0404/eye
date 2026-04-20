@@ -6,8 +6,6 @@ import type { ReactNode } from "react"
 
 import { DocsSearchDialog } from "@/components/docs-search-dialog"
 
-const basePath = process.env.EYE_DOCS_BASE_PATH ?? ""
-
 const sans = IBM_Plex_Sans({
   subsets: ["latin"],
   variable: "--font-sans",
@@ -24,7 +22,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"
-      data-base-path={basePath}
       className={`${sans.variable} ${mono.variable}`}
       suppressHydrationWarning
     >

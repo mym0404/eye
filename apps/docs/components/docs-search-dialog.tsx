@@ -10,6 +10,7 @@ import {
   SearchDialogInput,
   SearchDialogOverlay,
 } from "fumadocs-ui/components/dialog/search"
+import { useRouter } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
 
 type SearchEntry = {
@@ -66,15 +67,8 @@ const searchIndex: SearchEntry[] = [
   },
 ]
 
-function getBasePath() {
-  if (typeof document === "undefined") {
-    return ""
-  }
-
-  return document.documentElement.dataset.basePath ?? ""
-}
-
 export function DocsSearchDialog({ open, onOpenChange }: SharedProps) {
+  const router = useRouter()
   const [search, setSearch] = useState("")
 
   useEffect(() => {
@@ -138,7 +132,7 @@ export function DocsSearchDialog({ open, onOpenChange }: SharedProps) {
                   type="button"
                   className="rounded-xl border border-[color:var(--border-soft)] bg-[color:var(--surface-elevated)] px-4 py-3 text-left transition hover:border-[color:var(--accent-strong)] hover:bg-[color:var(--accent-soft)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--accent-strong)]"
                   onClick={() => {
-                    window.location.assign(`${getBasePath()}${entry.url}`)
+                    router.push(entry.url)
                     onOpenChange(false)
                   }}
                 >
