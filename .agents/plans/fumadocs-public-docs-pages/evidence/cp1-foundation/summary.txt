@@ -1,0 +1,16 @@
+CP1 verification
+
+- `pnpm --filter eye-docs build` passed with the carried-forward shell plus public IA.
+- Home route check:
+  - `http://127.0.0.1:3000/` rendered with the `Open Docs` and `Browse the docs` entry points.
+- Docs route check:
+  - `http://127.0.0.1:3000/docs/reference/core-tools/` rendered.
+  - Sidebar still showed only public sections: `Getting started`, `Usage`, `Reference`, `Integrations`, `FAQ`.
+- Public-only boundary:
+  - `rg -n "knowledge|\\.agents|plans" apps/docs/out` returned no matches.
+- Repair during checkpoint:
+  - Restarted `next dev` after `next build` to avoid the shared `.next` cache collision seen during T3 verification.
+  - Fixed nested MDX relative links so docs pages no longer resolve to wrong folder-local URLs like `/docs/reference/faq`.
+- Screenshots:
+  - `home.png`
+  - `docs-reference.png`

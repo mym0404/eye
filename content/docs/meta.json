@@ -1,0 +1,11 @@
+{
+  "title": "eye Docs",
+  "pages": [
+    "index",
+    "getting-started",
+    "usage",
+    "reference",
+    "integrations",
+    "faq"
+  ]
+}

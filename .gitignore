@@ -9,3 +9,5 @@ coverage
 .eye/blobs
 .eye/tmp
 .eye/logs
+apps/docs/.next
+apps/docs/out

@@ -3,6 +3,8 @@
 ## Top Level
 
 - `.mcp.json`: repo-local stdio MCP config for dogfooding `eye` from this checkout.
+- `apps/docs/`: public Next.js + Fumadocs site exported for GitHub Pages-style hosting.
+- `content/docs/`: public MDX source consumed by the docs app.
 - `src/index.ts`: stdio bootstrap.
 - `src/mcp/`: MCP tool registration, schemas, and formatted text output.
 - `src/project/`: project-root detection, `sourceRoots` inference, ignore rules, and `.eye` path layout.
@@ -32,6 +34,9 @@
 - `.eye/config.json`: committed portable config; in this repo it seeds dogfooding with `src` and `tests`.
 - `.eye/fixtures-manifest.json`: tracked fixture metadata for repository-owned real fixtures.
 - `.eye/cache.db`, `.eye/blobs/`, `.eye/runtime.json`, `.eye/tmp/`, and `.eye/logs/`: local runtime state ignored by Git.
+- `apps/docs/next.config.mjs`: static-export docs configuration, including optional GitHub Pages base-path support.
+- `apps/docs/app/` and `apps/docs/components/`: public docs UI shell, layout, and client-side search dialog.
+- `content/docs/`: public-only documentation content; internal agent knowledge stays under `.agents/knowledge/` and `plans/`.
 - `lefthook.yml`: local `pre-commit` and `pre-push` gates.
 
 ## Tests

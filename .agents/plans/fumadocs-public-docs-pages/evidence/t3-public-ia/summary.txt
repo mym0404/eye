@@ -1,0 +1,30 @@
+T3 verification
+
+- Build:
+  - `pnpm --filter eye-docs build` passed.
+  - Exported content routes include:
+    - `/docs`
+    - `/docs/getting-started/install`
+    - `/docs/getting-started/project-root-and-config`
+    - `/docs/usage/prompt-patterns`
+    - `/docs/reference/core-tools`
+    - `/docs/integrations/agent-clients`
+    - `/docs/faq`
+- Browser verification:
+  - `http://127.0.0.1:3000/docs/` rendered the docs landing page.
+  - Sidebar navigation showed `Getting started`, `Usage`, `Reference`, `Integrations`, and `FAQ`.
+  - Opened one route from each IA section and confirmed the page titles:
+    - `Install the Server`
+    - `Prompt Patterns`
+    - `Core Tool Reference`
+    - `Agent Client Integration`
+    - `FAQ`
+- README integration:
+  - `README.md` now includes `Public documentation site: [mym0404.github.io/eye](https://mym0404.github.io/eye/)`.
+- Internal boundary:
+  - `rg -n "knowledge|\\.agents|plans" apps/docs/out` returned no matches.
+- Environment repair:
+  - Running `next build` while `next dev` was still active corrupted the dev server bundle cache.
+  - Stopped the dev server and restarted it before browser verification.
+- Screenshot:
+  - `docs-home.png`

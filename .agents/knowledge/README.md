@@ -20,10 +20,11 @@
 - [project-map.md](project-map.md): module ownership, runtime/config surfaces, and test map.
 - [architecture.md](architecture.md): tool surface, read-only versus index-backed flows, and runtime boundaries.
 - [business-logic/indexing-cache-query.md](business-logic/indexing-cache-query.md): `.eye` layout, indexing lifecycle, query strategy, and fallback rules.
-- [operations/validation-and-hooks.md](operations/validation-and-hooks.md): pnpm commands, Lefthook, CI, and completion gates.
+- [operations/validation-and-hooks.md](operations/validation-and-hooks.md): pnpm commands, Lefthook, CI, docs gates, and completion rules.
 
 ## Update Triggers
 
 - layout, ownership, or repo-local dogfooding entrypoint changes: [project-map.md](project-map.md)
 - root resolution, `.eye` lifecycle, indexing, `scopePath`, or query behavior changes: [architecture.md](architecture.md) and [business-logic/indexing-cache-query.md](business-logic/indexing-cache-query.md)
 - validation flow, package manager, hooks, or CI changes: [operations/validation-and-hooks.md](operations/validation-and-hooks.md)
+- docs app structure, public docs content routing, or docs command changes: [project-map.md](project-map.md) and [operations/validation-and-hooks.md](operations/validation-and-hooks.md)

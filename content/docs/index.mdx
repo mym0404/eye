@@ -1,0 +1,57 @@
+---
+title: eye Docs
+description: Public setup, usage, and integration guides for the eye MCP server.
+---
+
+# Source browsing for coding agents
+
+`eye` is a source-browsing MCP server for large local repositories. It gives coding agents a bounded project map, exact source ranges, and index-backed symbol lookup without falling back to broad file reads as the default.
+
+[Get Started](./getting-started/install)
+[Tool Reference](./reference/core-tools)
+
+## Quick Start
+
+Use `eye` when you want an agent to:
+
+- map the project structure before touching code
+- read source around an exact line
+- resolve a symbol once from an anchor, then reuse `symbolId`
+- follow references without broad text-search fanout
+- reuse a lazy local cache instead of re-doing expensive repo scans
+
+The shipped MCP surface stays compact:
+
+- `get_project_structure`
+- `read_source_range`
+- `query_symbol`
+- `refresh_index`
+- `get_index_status`
+
+## Core Tools
+
+The most reliable flow for a fresh repository is:
+
+1. Start with `get_project_structure`.
+2. Read the exact file range you care about with `read_source_range`.
+3. Resolve a symbol with `query_symbol`.
+4. Reuse the returned `symbolId` for follow-up references or context.
+5. Refresh the local cache only when the repository changed.
+
+[Read the core tool reference](./reference/core-tools)
+
+## Client Setup
+
+The server runs over stdio and fits the same local workflow across MCP-aware agents:
+
+- install Node.js, Corepack, `Universal Ctags`, and `ripgrep`
+- build once with `pnpm install` and `pnpm run build`
+- point your MCP client at `node /absolute/path/to/eye/dist/index.js`
+
+[See client integration patterns](./integrations/agent-clients)
+
+## FAQ
+
+The current release is optimized for one project root at a time, lazy local indexing, and bounded navigation rather than whole-repository dumping.
+
+[Read the FAQ](./faq)

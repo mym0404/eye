@@ -1,0 +1,44 @@
+T4 verification
+
+- Visual system:
+  - Switched the docs app to `IBM Plex Sans` and `JetBrains Mono`.
+  - Added a light, border-first surface system with one blue accent and visible focus styling.
+  - Added a visible skip link and a keyboard-triggered client-side search dialog that works without server routes.
+- Home page at `1440x900`:
+  - Section labels rendered for `Quick Start`, `Core Tools`, `Client Setup`, and `FAQ`.
+  - Primary path links `Get Started` and `Tool Reference` were visible from the hero.
+- Reference page at `1440x900`:
+  - `visibleH1Count` was `1`.
+  - TOC was visible.
+  - Code blocks stayed readable with widths:
+    - `{ clientWidth: 689, scrollWidth: 689 }`
+    - `{ clientWidth: 689, scrollWidth: 689 }`
+- Tablet docs at `768x1024`:
+  - Search access and current-page highlighting remained visible on the docs page.
+  - Sidebar controls remained available from the page header.
+- Mobile docs at `390x844`:
+  - `Open Sidebar` and `Open Search` controls were visible.
+  - `visibleH1Count` was `1`.
+  - The page title top offset stayed clear of the sticky header: `titleTop = 164`.
+  - Long code blocks stayed scroll-safe with widths:
+    - `{ clientWidth: 341, scrollWidth: 341 }`
+    - `{ clientWidth: 341, scrollWidth: 563 }`
+- Keyboard and focus checks:
+  - Search opened from `Control+k` in both dev and static preview.
+  - Search close was confirmed with the dialog close button inside an `agent-browser batch` run.
+  - Keyboard focus on the search trigger produced `outline: solid`, `outlineWidth: 2px`.
+  - Keyboard focus on the home `Docs` link produced `outline: solid`, `outlineWidth: 2px`.
+- Static export:
+  - `pnpm --filter eye-docs build` passed.
+  - `EYE_DOCS_BASE_PATH=/eye pnpm --filter eye-docs build` passed.
+  - Static preview under `http://127.0.0.1:4300/eye/` loaded CSS, JS, and `/eye/docs/...` links correctly.
+  - Static preview search opened with the same result list as dev.
+  - Clicking the docs-shell `EYE` wordmark returned the preview to the home page.
+- Carry-forward repair:
+  - Added code examples to the reference page so the long-reference verification included real code blocks.
+- Screenshots:
+  - `desktop-home.png`
+  - `desktop-reference.png`
+  - `tablet-docs.png`
+  - `mobile-docs.png`
+  - `export-preview.png`

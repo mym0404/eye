@@ -18,6 +18,10 @@
       "!.eye/blobs",
       "!.eye/logs",
       "!.eye/tmp",
+      "!apps/docs/.source",
+      "!apps/docs/.next",
+      "!apps/docs/out",
+      "!.tmp-pages-preview",
       "!tests/fixtures/real",
       "!.agents/knowledge/*.local.json"
     ]

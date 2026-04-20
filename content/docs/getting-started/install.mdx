@@ -1,0 +1,45 @@
+---
+title: Install the Server
+description: Prepare the local runtime and build eye once.
+---
+
+# Install the Server
+
+`eye` needs a small local runtime before any MCP client can launch it.
+
+## Requirements
+
+- Node.js 20 or newer
+- Corepack
+- `ctags` on `PATH`, and it must be `Universal Ctags`
+- `rg` on `PATH`
+
+Install the external tools first:
+
+- macOS (Homebrew): `brew install universal-ctags ripgrep`
+- Ubuntu 24.04: `sudo apt-get update && sudo apt-get install --yes universal-ctags ripgrep`
+
+On macOS, the Xcode-provided `/usr/bin/ctags` is not enough. Put the Homebrew `ctags` binary earlier on `PATH`.
+
+## Build once
+
+```bash
+corepack enable
+corepack use pnpm@10
+pnpm install
+pnpm run build
+```
+
+Optional health check:
+
+```bash
+pnpm run doctor
+```
+
+The stdio entrypoint is:
+
+```bash
+node /absolute/path/to/eye/dist/index.js
+```
+
+Next step: [project root detection and first-run config](../project-root-and-config).

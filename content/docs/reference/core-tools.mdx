@@ -1,0 +1,83 @@
+---
+title: Core Tool Reference
+description: What each shipped MCP tool does and when to use it.
+---
+
+# Core Tool Reference
+
+`eye` ships five MCP tools.
+
+## `get_project_structure`
+
+Returns a bounded tree and skips generated paths such as `build`, `dist`, `out`, `.eye`, and similar defaults.
+
+Use it first when the repository is unfamiliar and you need an ownership map before touching code.
+
+## `read_source_range`
+
+Reads a file around a requested line with numbered output.
+
+Use it when the file is already known and you need exact local context instead of full-file reads.
+
+## `query_symbol`
+
+Offers one symbol-query surface for `definition`, `references`, and `context`.
+
+- `target.by` can be `anchor`, `symbolId`, or `symbol`
+- the response always returns `matches`
+- `action: "context"` also returns a bounded `context` block for the best definition
+- resolution is index-first and falls back to heuristic or ripgrep-backed search when the index is not enough
+
+The most reliable sequence is to resolve from an anchor first, then reuse the returned `symbolId`.
+
+```json
+{
+  "name": "query_symbol",
+  "arguments": {
+    "target": {
+      "by": "anchor",
+      "filePath": "src/main.ts",
+      "line": 42,
+      "column": 17
+    },
+    "action": "definition"
+  }
+}
+```
+
+Then follow up with the returned `symbolId`:
+
+```json
+{
+  "name": "query_symbol",
+  "arguments": {
+    "target": {
+      "by": "symbolId",
+      "symbolId": "sym:typescript:src/utils/helper.ts:helper:1"
+    },
+    "action": "references"
+  }
+}
+```
+
+## `refresh_index`
+
+Refreshes the `.eye` cache for the whole root or a narrowed scope.
+
+Use it after repository changes or when you want a deterministic indexing pass before deeper navigation.
+
+## `get_index_status`
+
+Reports generation, counts, and cache state.
+
+This path is read-only and returns an idle zero-value summary when no cache exists yet.
+
+## Scope limits
+
+- single project root only
+- lazy `.eye/` initialization under the target repository
+- persistent cache in `.eye/cache.db`
+- content-addressed sidecar blobs in `.eye/blobs/`
+- `Universal Ctags` for index-backed symbol extraction
+
+Next step: [frequently asked questions](../../faq).

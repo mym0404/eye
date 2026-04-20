@@ -1,0 +1,11 @@
+// @ts-nocheck -- skip type checking
+import * as docs_6 from "../../../content/docs/usage/prompt-patterns.mdx?collection=docs&hash=1776688912815"
+import * as docs_5 from "../../../content/docs/reference/core-tools.mdx?collection=docs&hash=1776688912815"
+import * as docs_4 from "../../../content/docs/integrations/agent-clients.mdx?collection=docs&hash=1776688912815"
+import * as docs_3 from "../../../content/docs/getting-started/project-root-and-config.mdx?collection=docs&hash=1776688912815"
+import * as docs_2 from "../../../content/docs/getting-started/install.mdx?collection=docs&hash=1776688912815"
+import * as docs_1 from "../../../content/docs/index.mdx?collection=docs&hash=1776688912815"
+import * as docs_0 from "../../../content/docs/faq.mdx?collection=docs&hash=1776688912815"
+import { _runtime } from "fumadocs-mdx"
+import * as _source from "../source.config"
+export const docs = _runtime.docs<typeof _source.docs>([{ info: {"path":"faq.mdx","absolutePath":"/Users/mj/projects/eye/content/docs/faq.mdx"}, data: docs_0 }, { info: {"path":"index.mdx","absolutePath":"/Users/mj/projects/eye/content/docs/index.mdx"}, data: docs_1 }, { info: {"path":"getting-started/install.mdx","absolutePath":"/Users/mj/projects/eye/content/docs/getting-started/install.mdx"}, data: docs_2 }, { info: {"path":"getting-started/project-root-and-config.mdx","absolutePath":"/Users/mj/projects/eye/content/docs/getting-started/project-root-and-config.mdx"}, data: docs_3 }, { info: {"path":"integrations/agent-clients.mdx","absolutePath":"/Users/mj/projects/eye/content/docs/integrations/agent-clients.mdx"}, data: docs_4 }, { info: {"path":"reference/core-tools.mdx","absolutePath":"/Users/mj/projects/eye/content/docs/reference/core-tools.mdx"}, data: docs_5 }, { info: {"path":"usage/prompt-patterns.mdx","absolutePath":"/Users/mj/projects/eye/content/docs/usage/prompt-patterns.mdx"}, data: docs_6 }], [{"info":{"path":"meta.json","absolutePath":"/Users/mj/projects/eye/content/docs/meta.json"},"data":{"title":"eye Docs","pages":["index","getting-started","usage","reference","integrations","faq"]}}])

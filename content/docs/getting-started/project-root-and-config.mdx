@@ -1,0 +1,32 @@
+---
+title: Project Root and Config
+description: Understand how eye picks a project root and bootstraps .eye/config.json.
+---
+
+# Project Root and Config
+
+`eye` resolves one project root at a time. It no longer depends on environment variables for project selection.
+
+## Root detection order
+
+1. Explicit `projectRoot` from the MCP tool call.
+2. The nearest ancestor that already has `.eye/config.json`.
+3. The nearest workspace root marked by `.git`, `pnpm-workspace.yaml`, or `turbo.json`.
+4. The nearest project root marked by `package.json`, `tsconfig.json`, `jsconfig.json`, `pyproject.toml`, or `setup.py`.
+5. The server process current working directory when nothing else matches.
+
+For the smoothest setup, launch the server from the repository root or from any directory inside the target repository.
+
+## First-run config
+
+On the first index-backed operation, `eye` creates `.eye/config.json` and seeds `sourceRoots` with inferred relative paths such as `src`, `app`, or `packages/web/src`.
+
+`sourceRoots` decides which paths are indexed. Structure and source reads still work across the whole project root.
+
+Edit the generated config when you need to narrow or widen the indexed surface.
+
+## Root override
+
+Every MCP tool still accepts `projectRoot`. Use it when one server instance needs to inspect multiple repositories or when the client launches the server from an unrelated working directory.
+
+Next step: [prompt patterns for reliable navigation](../../usage/prompt-patterns).

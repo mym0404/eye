@@ -1,0 +1,19 @@
+T5 verification
+
+- Root command surface:
+  - Added `pnpm docs:dev`
+  - Added `pnpm docs:build`
+  - Added `pnpm docs:check`
+- Hook policy:
+  - `pre-commit` stayed `lint + typecheck + test`.
+  - `pre-push` now runs `validate + docs:check + build`.
+- Agent-facing and evergreen docs:
+  - `AGENTS.md` now describes the public docs app surface and routes docs edits to `pnpm docs:check`.
+  - `.agents/knowledge/project-map.md` now maps `apps/docs` and `content/docs`.
+  - `.agents/knowledge/operations/validation-and-hooks.md` now documents the docs gate and updated `pre-push`.
+  - `.agents/knowledge/README.md` now routes docs-surface changes to the right knowledge files.
+- Verification:
+  - `pnpm docs:check` passed.
+  - `pnpm run lint` passed.
+- Repair during verification:
+  - Excluded generated docs artifacts (`apps/docs/.source`, `apps/docs/.next`, `apps/docs/out`, `.tmp-pages-preview`) from Biome so `lint` stays meaningful after docs builds and static preview checks.

@@ -1,0 +1,16 @@
+CP2 verification
+
+- `pnpm docs:check` passed on the carried-forward docs app and content surface.
+- `pnpm run lint` passed after excluding generated docs artifacts from Biome.
+- Re-read carried-forward surfaces:
+  - root commands in `package.json`
+  - hook policy in `lefthook.yml`
+  - docs validation step in `.github/workflows/ci.yml`
+  - Pages deploy path in `.github/workflows/docs-pages.yml`
+  - public docs app and MDX source under `apps/docs` and `content/docs`
+  - AGENTS and evergreen knowledge docs under `.agents/knowledge/`
+- Contract check:
+  - Public docs stay in `apps/docs` and `content/docs`.
+  - Internal maintenance material stays in `.agents/knowledge/` and `plans/`.
+  - Root commands, hook policy, docs workflow, and Pages workflow all use the same docs command surface.
+  - Pages proof is still externally blocked until the new workflow exists on the remote default branch and GitHub Pages is configured.

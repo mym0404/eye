@@ -1,0 +1,30 @@
+---
+title: FAQ
+description: Common questions about runtime, indexing, and current limitations.
+---
+
+# FAQ
+
+## Does eye index every repository automatically?
+
+No. Indexing is lazy and query-triggered. There is no watch mode or background daemon.
+
+## What runtime does index-backed navigation require?
+
+`Universal Ctags` on `PATH`, plus `ripgrep` for discovery and fallback search.
+
+## What happens when the cache schema changes?
+
+Old `.eye/cache.db` and `.eye/blobs/` state is invalidated instead of migrated in place. The next index-backed operation rebuilds it.
+
+## Can name-based lookups still be ambiguous?
+
+Yes. Name-only lookups can return multiple candidates, and some anchor or reference lookups can fall back to lower-confidence text search when ctags output is not enough.
+
+## Is the server optimized for dumping entire files?
+
+No. `context` is bounded and designed for navigation, not whole-definition dumping.
+
+## Where do heavy validation fixtures live?
+
+The default local validation flow stays lightweight. Large OSS coverage lives in `tests/fixtures/real/`, and the heavy suite runs separately with `pnpm run test:fixtures:real`.

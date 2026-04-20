@@ -10,6 +10,7 @@
 
 - `pnpm install` after `package.json`, `pnpm-lock.yaml`, or runtime dependency changes.
 - `pnpm run doctor` after runtime boot, external binary assumptions (`rg`, `ctags`), storage schema entrypoints, or server startup wiring changes.
+- `pnpm docs:check` after edits in `apps/docs`, `content/docs`, docs workflows, or public docs routing/export behavior.
 - `pnpm run lint` after TypeScript, JSON, YAML, or config edits that should satisfy Biome.
 - `pnpm run typecheck` after public type, Zod schema, MCP contract, or cross-module API changes.
 - `pnpm run test` after indexing, query, storage, project resolution, fallback search, or shared utility changes.
@@ -24,7 +25,7 @@
 - `prepare` runs `lefthook install` during dependency install.
 - `pnpm exec lefthook install` restores hooks when needed.
 - `pre-commit` runs `pnpm run lint`, `pnpm run typecheck`, and `pnpm run test`.
-- `pre-push` runs `pnpm run validate` and `pnpm run build`.
+- `pre-push` runs `pnpm run validate`, `pnpm docs:check`, and `pnpm run build`.
 
 ## CI
 
@@ -35,8 +36,10 @@
 
 ## Docs-Only Changes
 
-- There is no dedicated knowledge-sync validator in this repository.
-- For docs-only edits, re-read the routed documents, verify important relative links and referenced files, and avoid adding permanent validation tooling just for the knowledge tree.
+- Public docs live in `apps/docs` and `content/docs`; internal evergreen knowledge lives in `.agents/knowledge/`.
+- Use `pnpm docs:check` as the repo-native docs gate for the public site.
+- There is still no separate permanent validator just for the internal knowledge tree.
+- For docs-only edits outside the public docs app, re-read the routed documents, verify important relative links and referenced files, and avoid adding permanent validation tooling just for the knowledge tree.
 
 ## Acceptance Rule
 

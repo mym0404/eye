@@ -19,7 +19,12 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "dev:docs": "pnpm docs:dev",
     "doctor": "tsx src/scripts/doctor.ts",
+    "docs:build": "pnpm --filter eye-docs build",
+    "docs:build:pages": "EYE_DOCS_BASE_PATH=/eye pnpm docs:build",
+    "docs:check": "pnpm docs:build",
+    "docs:dev": "pnpm --filter eye-docs dev --hostname 127.0.0.1 --port 3001",
     "hooks:install": "lefthook install",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",

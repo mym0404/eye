@@ -1,0 +1,33 @@
+---
+title: Prompt Patterns
+description: Ask agents to use eye with bounded reads and symbol-aware follow-up.
+---
+
+# Prompt Patterns
+
+`eye` works best when the prompt tells the agent how to navigate instead of asking for a full-repository summary.
+
+## Good patterns
+
+- `Use eye to inspect this repository before answering. Start with get_project_structure at depth 2, then read the relevant files before you summarize the architecture.`
+- `Use eye to inspect this repository before answering. Resolve createProgram with query_symbol from an anchor or symbol name, then follow references using symbolId and summarize the main call sites.`
+- `Use eye only inside packages/next/src/server. Refresh the index for that scope, then use query_symbol for definition and references of loadConfig.`
+- `Read the source around django/core/handlers/wsgi.py before explaining the request path. Do not answer from memory.`
+
+## Prompts to avoid
+
+- `Explain this repo.`
+- `Find where this is used.` without a symbol, file, or scope.
+- `Read everything and summarize.` on a large repository.
+
+Those prompts force broad scans and make it harder to pick the right tool sequence.
+
+## Recommended flow
+
+1. `get_project_structure`
+2. `read_source_range`
+3. `query_symbol` with `action: "definition"`
+4. `query_symbol` with `action: "references"` or `action: "context"`
+5. `get_index_status` or `refresh_index` only when needed
+
+Next step: [core tool reference](../../reference/core-tools).

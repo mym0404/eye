@@ -1,0 +1,21 @@
+T2 verification
+
+- Environment repair:
+  - `pnpm install` failed without TTY because pnpm wanted confirmation before recreating `node_modules`.
+  - Re-ran as `CI=true pnpm install --no-frozen-lockfile` to refresh the lockfile and install the new workspace.
+  - Install completed with a Fumadocs peer warning on `vite`, but the docs app build still succeeded.
+- Build:
+  - `pnpm --filter eye-docs build` passed.
+  - Exported files confirmed:
+    - `apps/docs/out/index.html`
+    - `apps/docs/out/docs/index.html`
+    - `apps/docs/out/404/index.html`
+- Browser verification:
+  - `http://127.0.0.1:3000/` rendered the home shell.
+  - `http://127.0.0.1:3000/docs/` rendered the docs shell.
+  - `document.documentElement.lang` returned `"en"` on both routes.
+  - Home snapshot exposed `Open Docs`, `Browse the docs`, and the home `h1`.
+  - Docs snapshot exposed the docs shell controls and the `eye Docs` heading.
+- Screenshots:
+  - `home.png`
+  - `docs.png`

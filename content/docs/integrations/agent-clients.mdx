@@ -1,0 +1,51 @@
+---
+title: Agent Client Integration
+description: Connect eye to Codex, Claude Code, or a generic .mcp.json client.
+---
+
+# Agent Client Integration
+
+`eye` uses a local stdio command, so the integration surface is simple across MCP-aware tools.
+
+## Codex
+
+```bash
+codex mcp add eye -- node /absolute/path/to/eye/dist/index.js
+```
+
+Inside this repository, a lower-friction setup is:
+
+```bash
+codex mcp add eye -- pnpm --dir /absolute/path/to/eye run mcp:stdio
+```
+
+## Claude Code
+
+```bash
+claude mcp add --scope project eye -- node /absolute/path/to/eye/dist/index.js
+claude mcp list
+claude mcp get eye
+```
+
+## Generic `.mcp.json`
+
+```json
+{
+  "mcpServers": {
+    "eye": {
+      "command": "node",
+      "args": ["/absolute/path/to/eye/dist/index.js"]
+    }
+  }
+}
+```
+
+## Dogfooding in this repository
+
+This repository ships a project-local `.mcp.json` so MCP-aware clients can use `eye` directly from the checkout without extra environment setup.
+
+- the bundled config runs `pnpm exec tsx src/index.ts`
+- the committed `.eye/config.json` seeds `sourceRoots` with `src` and `tests`
+- opening this repository is enough when your client supports project-local `.mcp.json`
+
+Next step: [frequently asked questions](../../faq).

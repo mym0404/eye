@@ -3,10 +3,12 @@
 ## Project Overview
 
 `eye` is a source-browsing MCP server for coding agents that need bounded reads, lazy project-local indexing, and symbol-aware navigation inside large local repositories.
+The repository also ships a separate public docs site under `apps/docs` with MDX content in `content/docs`, while `/.agents/knowledge/` and `plans/` stay internal-only maintenance surfaces.
 
 ## Tech Stacks
 
 - TypeScript ESM on Node.js 20+.
+- Next.js + Fumadocs static-export docs app under `apps/docs`.
 - Corepack-managed pnpm with Biome, Vitest, Lefthook, and GitHub Actions.
 - `.eye/` uses SQLite plus JSON blobs; navigation uses tree-sitter, the TypeScript language service, and Pyright.
 
@@ -22,7 +24,8 @@
 - `pnpm run lint && pnpm run typecheck && pnpm run test` after edits in indexing, query, storage, project resolution, fallback search, or shared utilities.
 - `pnpm run test:e2e` after MCP tool schema, server wiring, or end-to-end navigation behavior changes.
 - `pnpm run test:fixtures:real` after semantic adapter or real-repository navigation behavior changes.
-- `pnpm run validate && pnpm run build` before broad handoff or release-facing changes.
+- `pnpm docs:check` after edits in `apps/docs`, `content/docs`, docs workflows, or public docs routing/export behavior.
+- `pnpm run validate && pnpm docs:check` before broad handoff or release-facing changes.
 
 ## Knowledge Router
 
@@ -41,3 +44,4 @@ Update when relevant:
 - traversal, indexing, storage, semantic lookup, fallback search, or MCP tool behavior: [`.agents/knowledge/business-logic/indexing-cache-query.md`](.agents/knowledge/business-logic/indexing-cache-query.md)
 - repository layout, tool ownership, or dogfooding entrypoints: [`.agents/knowledge/project-map.md`](.agents/knowledge/project-map.md)
 - validation, hooks, CI, or package-manager flow: [`.agents/knowledge/operations/validation-and-hooks.md`](.agents/knowledge/operations/validation-and-hooks.md)
+- docs app structure, public docs boundary, or docs command surface: [`.agents/knowledge/project-map.md`](.agents/knowledge/project-map.md) and [`.agents/knowledge/operations/validation-and-hooks.md`](.agents/knowledge/operations/validation-and-hooks.md)

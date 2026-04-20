@@ -1,0 +1,18 @@
+T6 verification
+
+- Workflow surface:
+  - Added `.github/workflows/docs-pages.yml`.
+  - Added `pnpm docs:build:pages` for the local and workflow Pages build path.
+  - Added a named `Docs Check` step to `.github/workflows/ci.yml` using `pnpm docs:check`.
+- Local command parity:
+  - `pnpm docs:build:pages` passed.
+  - `pnpm docs:check` passed.
+- Base-path artifact proof:
+  - `rg -n "/eye/|\"/eye" apps/docs/out/index.html apps/docs/out/docs/index.html apps/docs/out/docs/reference/core-tools/index.html` showed `/eye/...` asset and route prefixes in the exported HTML.
+- Workflow contract checks:
+  - `.github/workflows/docs-pages.yml` includes `pages: write`, `id-token: write`, `actions/configure-pages`, `actions/upload-pages-artifact`, `actions/deploy-pages`, and the `github-pages` environment.
+  - `.github/workflows/ci.yml` includes a named `Docs Check` step with `pnpm docs:check`.
+- Remote proof blocker:
+  - `gh api repos/mym0404/eye/pages` returned `404 Not Found`, so GitHub Pages is not currently configured or exposed for this repository.
+  - `gh run list --workflow docs-pages.yml -L 1` returned `404 workflow docs-pages.yml not found on the default branch`, which is expected because the new workflow only exists in the local working tree right now.
+  - Existing remote `ci` proof is limited to the pre-change workflow: `gh run list --workflow ci.yml -L 1` showed the latest successful `ci` run on `main`, but that run cannot include the new docs step until these changes are pushed.

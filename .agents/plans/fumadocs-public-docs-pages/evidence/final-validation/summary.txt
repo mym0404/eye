@@ -1,0 +1,28 @@
+Final validation
+
+- Broad repo gate:
+  - `pnpm run validate` passed.
+  - Included `doctor`, `lint`, `typecheck`, `test`, `test:e2e`, `test:coverage`, and `build`.
+- Docs gate:
+  - `pnpm docs:check` passed.
+- Dev browser proof:
+  - Home route at `http://127.0.0.1:3000/` showed the hero plus `Quick Start`, `Core Tools`, `Client Setup`, and `FAQ`.
+  - Primary path was verified on the running dev server:
+    - home `Get Started` -> `/docs/getting-started/install/`
+    - expand `Reference` -> `/docs/reference/core-tools/`
+    - sidebar `FAQ` -> `/docs/faq/`
+  - Mobile docs at `390x844` showed `Open Sidebar` and `Open Search`, kept one visible `h1`, and preserved horizontal scrolling on long code blocks.
+- Static preview proof:
+  - `pnpm docs:build:pages` passed.
+  - Mounted preview under `.tmp-pages-preview/eye` loaded at `http://127.0.0.1:4300/eye/`.
+  - CSS and JS assets loaded from `/eye/_next/...`.
+  - The static preview search dialog opened and showed the same local result list as dev.
+  - The docs-shell `EYE` wordmark returned the preview to the home page.
+- Remote proof blocker:
+  - `gh api repos/mym0404/eye/pages` returned `404 Not Found`.
+  - `gh run list --workflow docs-pages.yml -L 1` returned `404 workflow docs-pages.yml not found on the default branch`.
+  - The new docs validation step and Pages deploy workflow cannot have remote proof until this local diff is pushed and GitHub Pages is configured for the repository.
+- Screenshots:
+  - `home-desktop.png`
+  - `docs-mobile.png`
+  - `pages-preview.png`

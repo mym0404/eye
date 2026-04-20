@@ -1,0 +1,13 @@
+T1 verification
+
+- `pnpm-workspace.yaml` now declares both `"."` and `"apps/docs"`.
+- `.gitignore` adds only generated docs artifacts: `apps/docs/.next`, `apps/docs/out`.
+- `rg -n "apps/docs|\\.next|out" pnpm-workspace.yaml .gitignore`
+  - `pnpm-workspace.yaml:3:  - "apps/docs"`
+  - `.gitignore:12:apps/docs/.next`
+  - `.gitignore:13:apps/docs/out`
+
+Relevant diff
+
+- Added `apps/docs` to workspace packages.
+- Added `apps/docs/.next` and `apps/docs/out` to Git ignore rules.
