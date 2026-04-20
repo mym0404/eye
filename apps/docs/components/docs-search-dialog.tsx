@@ -3,6 +3,7 @@
 import type { SharedProps } from "fumadocs-ui/components/dialog/search"
 import {
   SearchDialog,
+  SearchDialogClose,
   SearchDialogContent,
   SearchDialogHeader,
   SearchDialogIcon,
@@ -112,25 +113,21 @@ export function DocsSearchDialog({ open, onOpenChange }: SharedProps) {
       search={search}
       onSearchChange={setSearch}
     >
-      <SearchDialogOverlay className="bg-slate-950/25 backdrop-blur-[2px]" />
-      <SearchDialogContent className="border border-[color:var(--border-strong)] bg-[color:var(--surface-raised)] p-0 shadow-[0_24px_80px_rgba(15,23,42,0.18)]">
+      <SearchDialogOverlay className="bg-[color:var(--search-overlay)] backdrop-blur-[6px]" />
+      <SearchDialogContent className="left-1/2 top-16 z-50 w-[min(44rem,calc(100vw-1.5rem))] -translate-x-1/2 border border-[color:var(--border-strong)] bg-[color:var(--surface-raised)] p-0 text-[color:var(--app-fg)] shadow-[0_24px_80px_rgba(15,23,42,0.18)] sm:top-24">
         <SearchDialogHeader className="border-b border-[color:var(--border-soft)]">
-          <SearchDialogIcon className="text-slate-500" />
+          <SearchDialogIcon className="text-[color:var(--muted-fg)]" />
           <SearchDialogInput
             placeholder="Search docs, tools, setup"
-            className="h-14 bg-transparent text-base text-slate-950 placeholder:text-slate-500"
+            className="h-14 bg-transparent text-base text-[color:var(--app-fg)] placeholder:text-[color:var(--muted-fg)]"
           />
-          <button
-            type="button"
-            onClick={() => onOpenChange(false)}
-            className="rounded-md border border-[color:var(--border-soft)] bg-white px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-slate-600"
-          >
+          <SearchDialogClose className="rounded-md border border-[color:var(--border-soft)] bg-[color:var(--surface-raised)] px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-[color:var(--muted-fg)]">
             Close
-          </button>
+          </SearchDialogClose>
         </SearchDialogHeader>
 
         <div className="max-h-[70vh] overflow-y-auto p-3">
-          <div className="mb-3 px-2 text-[11px] font-medium uppercase tracking-[0.22em] text-slate-500">
+          <div className="mb-3 px-2 text-[11px] font-medium uppercase tracking-[0.22em] text-[color:var(--muted-fg)]">
             {search.trim().length === 0 ? "Suggested pages" : "Results"}
           </div>
           <div className="grid gap-2">
@@ -139,7 +136,7 @@ export function DocsSearchDialog({ open, onOpenChange }: SharedProps) {
                 <button
                   key={entry.url}
                   type="button"
-                  className="rounded-xl border border-[color:var(--border-soft)] bg-white px-4 py-3 text-left transition hover:border-[color:var(--accent-strong)] hover:bg-[color:var(--accent-soft)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--accent-strong)]"
+                  className="rounded-xl border border-[color:var(--border-soft)] bg-[color:var(--surface-elevated)] px-4 py-3 text-left transition hover:border-[color:var(--accent-strong)] hover:bg-[color:var(--accent-soft)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--accent-strong)]"
                   onClick={() => {
                     window.location.assign(`${getBasePath()}${entry.url}`)
                     onOpenChange(false)
@@ -148,16 +145,16 @@ export function DocsSearchDialog({ open, onOpenChange }: SharedProps) {
                   <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[color:var(--accent-strong)]">
                     {entry.section}
                   </p>
-                  <p className="mt-2 text-sm font-semibold text-slate-950">
+                  <p className="mt-2 text-sm font-semibold text-[color:var(--app-fg)]">
                     {entry.title}
                   </p>
-                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                  <p className="mt-1 text-sm leading-6 text-[color:var(--muted-fg)]">
                     {entry.description}
                   </p>
                 </button>
               ))
             ) : (
-              <div className="rounded-xl border border-dashed border-[color:var(--border-strong)] bg-white px-4 py-8 text-center text-sm leading-6 text-slate-600">
+              <div className="rounded-xl border border-dashed border-[color:var(--border-strong)] bg-[color:var(--surface-elevated)] px-4 py-8 text-center text-sm leading-6 text-[color:var(--muted-fg)]">
                 No results yet. Try tool names like <code>query_symbol</code> or
                 section names like <code>Getting Started</code>.
               </div>

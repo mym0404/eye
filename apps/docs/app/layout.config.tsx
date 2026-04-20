@@ -14,7 +14,8 @@ export const baseOptions: BaseLayoutProps = {
     },
   },
   themeSwitch: {
-    enabled: false,
+    enabled: true,
+    mode: "light-dark-system",
   },
   githubUrl: "https://github.com/mym0404/eye",
   links: [

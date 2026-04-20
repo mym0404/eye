@@ -6,11 +6,30 @@
   --app-bg: #f4f6f8;
   --app-fg: #0f172a;
   --surface-raised: #ffffff;
+  --surface-elevated: #ffffff;
   --surface-muted: #eef2f7;
   --border-soft: rgba(15, 23, 42, 0.08);
   --border-strong: rgba(15, 23, 42, 0.16);
   --accent-strong: #2563eb;
   --accent-soft: rgba(37, 99, 235, 0.08);
+  --muted-fg: rgb(71 85 105);
+  --search-overlay: rgba(15, 23, 42, 0.28);
+}
+
+html.dark,
+html[data-theme="dark"] {
+  --app-bg: #09111f;
+  --app-fg: #e5edf7;
+  --surface-raised: #0f172a;
+  --surface-elevated: #132033;
+  --surface-muted: #101b2d;
+  --border-soft: rgba(148, 163, 184, 0.16);
+  --border-strong: rgba(148, 163, 184, 0.28);
+  --accent-strong: #7dd3fc;
+  --accent-soft: rgba(125, 211, 252, 0.12);
+  --muted-fg: rgb(148 163 184);
+  --search-overlay: rgba(2, 6, 23, 0.6);
+  color-scheme: dark;
 }
 
 html {
@@ -69,7 +88,7 @@ summary:focus-visible {
 .home-link {
   border: 1px solid var(--border-soft);
   border-radius: 999px;
-  color: rgb(71 85 105);
+  color: var(--muted-fg);
   font-size: 0.875rem;
   padding: 0.65rem 1rem;
 }
@@ -132,7 +151,7 @@ summary:focus-visible {
 .section-title {
   margin-top: 0.75rem;
   max-width: 36rem;
-  color: rgb(15 23 42);
+  color: var(--app-fg);
   font-size: clamp(1.8rem, 3vw, 2.4rem);
   font-weight: 600;
   letter-spacing: -0.04em;
@@ -145,7 +164,7 @@ summary:focus-visible {
 }
 
 .stat-label {
-  color: rgb(15 23 42);
+  color: var(--app-fg);
   font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.2em;
@@ -153,7 +172,7 @@ summary:focus-visible {
 }
 
 .stat-copy {
-  color: rgb(71 85 105);
+  color: var(--muted-fg);
   font-size: 0.95rem;
   line-height: 1.7;
   margin-top: 0.75rem;
@@ -167,11 +186,11 @@ summary:focus-visible {
 }
 
 .text-slate-650 {
-  color: rgb(71 85 105);
+  color: var(--muted-fg);
 }
 
 pre {
-  background: rgb(248 250 252);
+  background: var(--surface-muted);
   border: 1px solid var(--border-soft);
   border-radius: 0.9rem;
   overflow-x: auto;
@@ -179,7 +198,7 @@ pre {
 }
 
 pre code {
-  color: rgb(15 23 42);
+  color: var(--app-fg);
   font-size: 0.82rem;
 }
 
@@ -189,10 +208,19 @@ pre code {
 
 .prose {
   max-width: 72ch;
+  color: var(--muted-fg);
 }
 
 .prose pre {
   margin-inline: 0;
+}
+
+.prose :where(h1, h2, h3, h4, strong, code, th) {
+  color: var(--app-fg);
+}
+
+.prose :where(a:not(:where([class~="not-prose"], [class~="not-prose"] *))) {
+  color: var(--accent-strong);
 }
 
 @media (min-width: 1024px) {

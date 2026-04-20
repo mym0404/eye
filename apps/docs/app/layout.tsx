@@ -38,7 +38,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             links: [["Install the Server", "/docs/getting-started/install"]],
           }}
           theme={{
-            enabled: false,
+            enabled: true,
+            attribute: "class",
+            defaultTheme: "system",
+            enableSystem: true,
+            disableTransitionOnChange: true,
           }}
         >
           {children}

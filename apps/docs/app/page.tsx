@@ -91,7 +91,7 @@ export default function HomePage() {
           <div className="grid flex-1 gap-10 py-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(20rem,0.8fr)] lg:items-end">
             <div className="max-w-3xl">
               <p className="section-label">Public docs</p>
-              <h1 className="mt-4 max-w-3xl text-5xl font-semibold tracking-[-0.06em] text-slate-950 sm:text-6xl lg:text-[4.5rem]">
+              <h1 className="mt-4 max-w-3xl text-5xl font-semibold tracking-[-0.06em] text-[color:var(--app-fg)] sm:text-6xl lg:text-[4.5rem]">
                 Use `eye` when an agent needs exact code navigation, not more
                 file churn.
               </h1>
@@ -158,7 +158,7 @@ export default function HomePage() {
                 <p className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.24em] text-[color:var(--accent-strong)]">
                   {item.step}
                 </p>
-                <h3 className="mt-3 text-lg font-semibold text-slate-950">
+                <h3 className="mt-3 text-lg font-semibold text-[color:var(--app-fg)]">
                   {item.title}
                 </h3>
                 <p className="mt-3 text-sm leading-7 text-slate-650">
@@ -184,7 +184,7 @@ export default function HomePage() {
                 key={name}
                 className="grid gap-3 py-5 lg:grid-cols-[minmax(0,16rem)_minmax(0,1fr)] lg:items-start"
               >
-                <code className="text-sm font-medium text-slate-950">
+                <code className="text-sm font-medium text-[color:var(--app-fg)]">
                   {name}
                 </code>
                 <p className="text-sm leading-7 text-slate-650">{body}</p>
@@ -206,7 +206,7 @@ export default function HomePage() {
             {clients.map((client) => (
               <article key={client.name} className="surface-panel">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <h3 className="text-lg font-semibold text-slate-950">
+                  <h3 className="text-lg font-semibold text-[color:var(--app-fg)]">
                     {client.name}
                   </h3>
                   <Link
@@ -233,19 +233,19 @@ export default function HomePage() {
               Current product limits are part of the public contract.
             </h2>
           </div>
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
-            <div className="grid gap-3">
+          <div className="grid gap-4 lg:grid-cols-[minmax(18rem,0.9fr)_minmax(0,1.1fr)] lg:items-start">
+            <div className="grid gap-3 min-w-0">
               {faqs.map((item) => (
                 <div
                   key={item}
-                  className="surface-panel text-sm leading-7 text-slate-650"
+                  className="surface-panel w-full text-sm leading-7 text-slate-650"
                 >
                   {item}
                 </div>
               ))}
             </div>
-            <div className="surface-panel lg:min-w-64">
-              <p className="text-sm uppercase tracking-[0.2em] text-slate-500">
+            <div className="surface-panel min-w-0">
+              <p className="text-sm uppercase tracking-[0.2em] text-[color:var(--muted-fg)]">
                 Need the full path?
               </p>
               <p className="mt-3 text-sm leading-7 text-slate-650">
