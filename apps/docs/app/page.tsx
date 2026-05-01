@@ -8,8 +8,8 @@ const quickStart = [
   },
   {
     step: "02",
-    title: "Build the stdio entrypoint",
-    body: "Run pnpm install and pnpm run build once, then point your client at the dist entry.",
+    title: "Run the published package",
+    body: "Use npx -y eye-mcp for normal setup, or keep the local checkout flow for development.",
   },
   {
     step: "03",
@@ -44,17 +44,15 @@ const tools = [
 const clients = [
   {
     name: "Codex",
-    command: "codex mcp add eye -- node /absolute/path/to/eye/dist/index.js",
+    command: "codex mcp add eye -- npx -y eye-mcp",
   },
   {
     name: "Claude Code",
-    command:
-      "claude mcp add --scope project eye -- node /absolute/path/to/eye/dist/index.js",
+    command: "claude mcp add --scope project eye -- npx -y eye-mcp",
   },
   {
     name: "Generic .mcp.json",
-    command:
-      '"command": "node", "args": ["/absolute/path/to/eye/dist/index.js"]',
+    command: '"command": "npx", "args": ["-y", "eye-mcp"]',
   },
 ]
 

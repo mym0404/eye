@@ -1,21 +1,18 @@
 {
-  "name": "eye",
+  "name": "eye-mcp",
   "version": "0.1.0",
   "description": "A TypeScript MCP server for source-code browsing in large repositories.",
   "type": "module",
   "main": "./dist/index.js",
   "exports": "./dist/index.js",
   "bin": {
+    "eye-mcp": "./dist/index.js",
     "eye": "./dist/index.js"
   },
   "files": [
     "dist",
-    ".eye",
-    ".agents",
-    "plans",
     "README.md",
-    "AGENTS.md",
-    "PLANS.md"
+    "LICENSE"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
@@ -29,7 +26,10 @@
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "mcp:stdio": "tsx src/index.ts",
+    "prepack": "pnpm run build",
     "prepare": "lefthook install",
+    "release:npm:check": "pnpm run validate && pnpm docs:check && npm pack --dry-run",
+    "release:npm": "pnpm run release:npm:check && npm publish",
     "test": "vitest run",
     "test:e2e": "vitest run --config vitest.e2e.config.ts",
     "test:fixtures:real": "vitest run --config vitest.real-fixtures.config.ts",
@@ -46,6 +46,17 @@
     "ripgrep"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mym0404/eye.git"
+  },
+  "homepage": "https://github.com/mym0404/eye#readme",
+  "bugs": {
+    "url": "https://github.com/mym0404/eye/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=20",
     "pnpm": ">=10"

@@ -1,6 +1,6 @@
 ---
 title: Install the Server
-description: Prepare the local runtime and build eye once.
+description: Prepare the local runtime and launch eye-mcp from an MCP client.
 ---
 
 # Install the Server
@@ -21,7 +21,15 @@ Install the external tools first:
 
 On macOS, the Xcode-provided `/usr/bin/ctags` is not enough. Put the Homebrew `ctags` binary earlier on `PATH`.
 
-## Build once
+## Run without cloning
+
+After the prerequisites are installed, most users can point their MCP client at the published package:
+
+```bash
+npx -y eye-mcp
+```
+
+## Build from a local checkout
 
 ```bash
 corepack enable
@@ -36,7 +44,7 @@ Optional health check:
 pnpm run doctor
 ```
 
-The stdio entrypoint is:
+The local stdio entrypoint is:
 
 ```bash
 node /absolute/path/to/eye/dist/index.js

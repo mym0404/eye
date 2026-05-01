@@ -45,8 +45,8 @@ The most reliable flow for a fresh repository is:
 The server runs over stdio and fits the same local workflow across MCP-aware agents:
 
 - install Node.js, Corepack, `Universal Ctags`, and `ripgrep`
-- build once with `pnpm install` and `pnpm run build`
-- point your MCP client at `node /absolute/path/to/eye/dist/index.js`
+- for normal use, run `npx -y eye-mcp`
+- for local development, build once with `pnpm install` and `pnpm run build`
 
 [See client integration patterns](./integrations/agent-clients)
 

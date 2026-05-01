@@ -10,7 +10,7 @@ description: Connect eye to Codex, Claude Code, or a generic .mcp.json client.
 ## Codex
 
 ```bash
-codex mcp add eye -- node /absolute/path/to/eye/dist/index.js
+codex mcp add eye -- npx -y eye-mcp
 ```
 
 Inside this repository, a lower-friction setup is:
@@ -22,7 +22,15 @@ codex mcp add eye -- pnpm --dir /absolute/path/to/eye run mcp:stdio
 ## Claude Code
 
 ```bash
-claude mcp add --scope project eye -- node /absolute/path/to/eye/dist/index.js
+claude mcp add --scope project eye -- npx -y eye-mcp
+claude mcp list
+claude mcp get eye
+```
+
+Inside this repository, a local checkout setup is:
+
+```bash
+claude mcp add --scope project eye -- pnpm --dir /absolute/path/to/eye run mcp:stdio
 claude mcp list
 claude mcp get eye
 ```
@@ -33,8 +41,8 @@ claude mcp get eye
 {
   "mcpServers": {
     "eye": {
-      "command": "node",
-      "args": ["/absolute/path/to/eye/dist/index.js"]
+      "command": "npx",
+      "args": ["-y", "eye-mcp"]
     }
   }
 }
