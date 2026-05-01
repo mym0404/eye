@@ -11,6 +11,8 @@ description: What each shipped MCP tool does and when to use it.
 
 Returns a bounded tree and skips generated paths such as `build`, `dist`, `out`, `.eye`, and similar defaults.
 
+Configured `sourceRoots` are ordered before sibling directories so source folders stay visible in bounded results.
+
 Use it first when the repository is unfamiliar and you need an ownership map before touching code.
 
 ## `read_source_range`
@@ -78,6 +80,7 @@ This path is read-only and returns an idle zero-value summary when no cache exis
 - lazy `.eye/` initialization under the target repository
 - persistent cache in `.eye/cache.db`
 - content-addressed sidecar blobs in `.eye/blobs/`
+- generated `.eye/.gitignore` keeps runtime cache files local while `.eye/config.json` remains visible
 - `Universal Ctags` for index-backed symbol extraction
 
 Next step: [frequently asked questions](../../faq).

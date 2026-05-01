@@ -15,6 +15,7 @@
 - This tree holds durable repository facts that change implementation or verification decisions.
 - `plans/` holds transient execution plans and status routing, not evergreen knowledge.
 - Keep one canonical explanation per topic and update it when verified behavior changes.
+- Keep maintenance guidance focused on the current best implementation. Do not preserve compatibility history, migration residue, or obsolete transition paths as evergreen knowledge unless they are still active constraints.
 - `README.md` and the public docs describe the published `eye-mcp` package for `npx` users; repository-local dogfooding and maintainer workflow live here.
 
 ## Canonical Topics

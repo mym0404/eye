@@ -129,7 +129,9 @@ Root detection order:
 
 On the first index-backed operation, `eye` creates `.eye/config.json` and fills `sourceRoots` with inferred relative paths such as `src`, `app`, or `packages/web/src`.
 
-`sourceRoots` only controls indexing. Structure and source reads still work across the whole resolved project root.
+`sourceRoots` controls indexing and helps `get_project_structure` show source roots before sibling directories. Structure and source reads still work across the whole resolved project root.
+
+Runtime init also creates `.eye/.gitignore`, which keeps local cache files out of Git while leaving `.eye/config.json` visible.
 
 ## Limitations
 

@@ -70,6 +70,9 @@ describe("project context", () => {
 
     expect(context.config.sourceRoots).toEqual(["app", "src"])
     expect(config.sourceRoots).toEqual(["app", "src"])
+    await expect(
+      readFile(path.join(context.paths.eyeDir, ".gitignore"), "utf8"),
+    ).resolves.toBe("*\n!config.json\n!.gitignore\n")
   })
 
   it("preserves an existing sourceRoots config", async () => {

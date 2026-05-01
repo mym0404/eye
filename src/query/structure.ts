@@ -13,16 +13,68 @@ export type TreeEntry = {
   children?: TreeEntry[]
 }
 
-const sortDirents = (left: Dirent, right: Dirent) => {
-  if (left.isDirectory() && !right.isDirectory()) {
+type VisibleDirent = {
+  dirent: Dirent
+  absolutePath: string
+  relativePath: string
+}
+
+const isSourceRootPath = ({
+  relativePath,
+  sourceRoots,
+}: {
+  relativePath: string
+  sourceRoots: string[]
+}) =>
+  sourceRoots.some(
+    (sourceRoot) =>
+      sourceRoot === "." ||
+      relativePath === sourceRoot ||
+      relativePath.startsWith(`${sourceRoot}/`) ||
+      sourceRoot.startsWith(`${relativePath}/`),
+  )
+
+const getSourceRootPriority = ({
+  entry,
+  sourceRoots,
+}: {
+  entry: VisibleDirent
+  sourceRoots: string[]
+}) =>
+  entry.dirent.isDirectory() &&
+  isSourceRootPath({
+    relativePath: entry.relativePath,
+    sourceRoots,
+  })
+    ? 0
+    : 1
+
+const sortDirents = ({
+  left,
+  right,
+  sourceRoots,
+}: {
+  left: VisibleDirent
+  right: VisibleDirent
+  sourceRoots: string[]
+}) => {
+  if (left.dirent.isDirectory() && !right.dirent.isDirectory()) {
     return -1
   }
 
-  if (!left.isDirectory() && right.isDirectory()) {
+  if (!left.dirent.isDirectory() && right.dirent.isDirectory()) {
     return 1
   }
 
-  return left.name.localeCompare(right.name)
+  const sourceRootPriority =
+    getSourceRootPriority({ entry: left, sourceRoots }) -
+    getSourceRootPriority({ entry: right, sourceRoots })
+
+  if (sourceRootPriority !== 0) {
+    return sourceRootPriority
+  }
+
+  return left.dirent.name.localeCompare(right.dirent.name)
 }
 
 export const getProjectStructure = async ({
@@ -54,32 +106,44 @@ export const getProjectStructure = async ({
 
     const dirents = await readdir(absoluteDir, { withFileTypes: true })
     const visibleDirents = dirents
+      .map((dirent) => {
+        const absolutePath = path.join(absoluteDir, dirent.name)
+        const relativePath = toProjectRelativePath({
+          projectRoot: context.projectRoot,
+          targetPath: absolutePath,
+        })
+
+        return {
+          dirent,
+          absolutePath,
+          relativePath,
+        }
+      })
       .filter(
-        (dirent) =>
+        (entry) =>
           !shouldSkipName({
-            name: dirent.name,
+            name: entry.dirent.name,
             includeHidden,
-          }),
+          }) && !context.shouldIgnorePath(entry.relativePath),
       )
-      .sort(sortDirents)
+      .sort((left, right) =>
+        sortDirents({
+          left,
+          right,
+          sourceRoots: context.config.sourceRoots,
+        }),
+      )
 
     const entries: TreeEntry[] = []
 
-    for (const dirent of visibleDirents) {
+    for (const entry of visibleDirents) {
       if (totalEntries >= maxEntries) {
         truncated = true
         break
       }
 
-      const absolutePath = path.join(absoluteDir, dirent.name)
-      const relativePath = toProjectRelativePath({
-        projectRoot: context.projectRoot,
-        targetPath: absolutePath,
-      })
-
-      if (context.shouldIgnorePath(relativePath)) {
-        continue
-      }
+      const { absolutePath, relativePath } = entry
+      const { dirent } = entry
 
       if (dirent.isDirectory()) {
         totalEntries += 1

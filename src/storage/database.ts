@@ -59,6 +59,9 @@ const now = () => new Date().toISOString()
 const asOptional = <Value>(value: Value | null | undefined) =>
   value ?? undefined
 
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : "unknown database error"
+
 const scopeMatches = ({
   relativePath,
   scopePath,
@@ -482,61 +485,69 @@ export class EyeDatabase {
       for (const indexedFile of indexedFiles) {
         const { file } = indexedFile
 
-        this.deleteFileRows(file.relativePath)
+        try {
+          this.deleteFileRows(file.relativePath)
 
-        upsertFile.run(
-          this.projectRoot,
-          file.relativePath,
-          file.language,
-          file.contentHash,
-          file.blobHash,
-          file.size,
-          file.mtimeMs,
-          file.parseSource,
-          generation,
-          generation,
-          indexedFile.symbols.length,
-          indexedFile.references.length,
-        )
-
-        for (const symbol of indexedFile.symbols) {
-          insertSymbol.run(
-            symbol.symbolId,
+          upsertFile.run(
             this.projectRoot,
-            symbol.relativePath,
-            symbol.language,
-            symbol.name,
-            symbol.kind,
-            symbol.containerName,
-            symbol.source,
-            symbol.line,
-            symbol.column,
-            symbol.endLine,
-            symbol.endColumn,
+            file.relativePath,
+            file.language,
+            file.contentHash,
+            file.blobHash,
+            file.size,
+            file.mtimeMs,
+            file.parseSource,
+            generation,
+            generation,
+            indexedFile.symbols.length,
+            indexedFile.references.length,
           )
-        }
 
-        for (const reference of indexedFile.references) {
-          insertReference.run(
-            this.projectRoot,
-            reference.relativePath,
-            reference.language,
-            reference.symbolId,
-            reference.name,
-            reference.context,
-            reference.source,
-            reference.line,
-            reference.column,
-          )
-        }
+          for (const symbol of indexedFile.symbols) {
+            insertSymbol.run(
+              symbol.symbolId,
+              this.projectRoot,
+              symbol.relativePath,
+              symbol.language,
+              symbol.name,
+              symbol.kind,
+              symbol.containerName,
+              symbol.source,
+              symbol.line,
+              symbol.column,
+              symbol.endLine,
+              symbol.endColumn,
+            )
+          }
 
-        for (const dependency of indexedFile.dependencies) {
-          insertDependency.run(
-            this.projectRoot,
-            dependency.relativePath,
-            dependency.dependencyPath,
-            dependency.edgeKind,
-            dependency.specifier,
+          for (const reference of indexedFile.references) {
+            insertReference.run(
+              this.projectRoot,
+              reference.relativePath,
+              reference.language,
+              reference.symbolId,
+              reference.name,
+              reference.context,
+              reference.source,
+              reference.line,
+              reference.column,
+            )
+          }
+
+          for (const dependency of indexedFile.dependencies) {
+            insertDependency.run(
+              this.projectRoot,
+              dependency.relativePath,
+              dependency.dependencyPath,
+              dependency.edgeKind,
+              dependency.specifier,
+            )
+          }
+        } catch (error) {
+          throw new Error(
+            `failed to commit index rows for ${file.relativePath}: ${getErrorMessage(
+              error,
+            )}`,
           )
         }
       }

@@ -77,6 +77,9 @@ const toReusedFileRecord = ({
   parseSource: row.parse_source as NormalizedFileRecord["parseSource"],
 })
 
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : "unknown indexing error"
+
 export const refreshProjectIndex = async ({
   context,
   database,
@@ -179,32 +182,38 @@ export const refreshProjectIndex = async ({
       items: changedPaths,
       concurrency: context.config.indexing.workerConcurrency,
       worker: async (relativePath) => {
-        const fileText = await readFile(
-          toAbsolutePath({
+        try {
+          const fileText = await readFile(
+            toAbsolutePath({
+              projectRoot: context.projectRoot,
+              relativePath,
+            }),
+            "utf8",
+          )
+          const indexed = await indexFileContent({
             projectRoot: context.projectRoot,
             relativePath,
-          }),
-          "utf8",
-        )
-        const indexed = await indexFileContent({
-          projectRoot: context.projectRoot,
-          relativePath,
-          text: fileText,
-        })
-        const blobHash = hashValue(JSON.stringify(indexed.blobPayload))
+            text: fileText,
+          })
+          const blobHash = hashValue(JSON.stringify(indexed.blobPayload))
 
-        await blobStore.writeJsonBlob({
-          hash: blobHash,
-          value: indexed.blobPayload,
-        })
+          await blobStore.writeJsonBlob({
+            hash: blobHash,
+            value: indexed.blobPayload,
+          })
 
-        return {
-          ...indexed,
-          file: {
-            ...indexed.file,
-            blobHash,
-          },
-        } satisfies IndexedFileData
+          return {
+            ...indexed,
+            file: {
+              ...indexed.file,
+              blobHash,
+            },
+          } satisfies IndexedFileData
+        } catch (error) {
+          throw new Error(
+            `failed to index ${relativePath}: ${getErrorMessage(error)}`,
+          )
+        }
       },
     })
 
@@ -223,8 +232,7 @@ export const refreshProjectIndex = async ({
       indexedFiles: indexedFiles.length,
     }
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "unknown indexing error"
+    const message = getErrorMessage(error)
     database.markIndexRunFailed(message)
     throw error
   }

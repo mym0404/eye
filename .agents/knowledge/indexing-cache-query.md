@@ -39,13 +39,14 @@
 - First runtime init writes inferred `sourceRoots` back to `.eye/config.json` so the config becomes user-editable.
 - If a configured source root is `.`, any nested `scopePath` can be searched.
 - Otherwise `scopePath` must overlap a configured source root to produce active search roots.
-- Read-only structure and source tools still operate over the whole resolved project root instead of `sourceRoots`.
+- Read-only structure and source tools still operate over the whole resolved project root instead of `sourceRoots`; `get_project_structure` only uses `sourceRoots` to order source directories before siblings.
 
 ## Cache Layout
 
 ### Filesystem
 
 - `.eye/config.json`: portable `sourceRoots`, ignore, and indexing config.
+- `.eye/.gitignore`: generated runtime ignore file that exposes `config.json` and hides local cache state.
 - `.eye/fixtures-manifest.json`: committed only for repository-owned fixture projects.
 - `.eye/runtime.json`: machine-local runtime metadata.
 - `.eye/cache.db`: SQLite cache.

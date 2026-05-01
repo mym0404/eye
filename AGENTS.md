@@ -10,12 +10,13 @@ The repository also ships a separate public docs site under `apps/docs` with MDX
 - TypeScript ESM on Node.js 20+.
 - Next.js + Fumadocs static-export docs app under `apps/docs`.
 - Corepack-managed pnpm with Biome, Vitest, Lefthook, and GitHub Actions.
-- `.eye/` uses SQLite plus JSON blobs; persisted indexing uses Universal Ctags with semantic-first TypeScript/Python navigation and text-search fallbacks, while tree-sitter code is legacy.
+- `.eye/` uses SQLite plus JSON blobs; persisted indexing uses Universal Ctags with semantic-first TypeScript/Python navigation and text-search fallbacks. Tree-sitter extraction code is outside the current shipped indexing path.
 
 ## Non-Negotiables
 
 - `get_project_structure`, `read_source_range`, and `get_index_status` stay read-only. They must resolve the project root without forcing `.eye/` runtime creation.
 - `query_symbol` and `refresh_index` own lazy `.eye/` initialization and must respect `.eye/config.json` `sourceRoots` and ignore rules.
+- Optimize for the current best implementation, not backward compatibility. When internal paths, APIs, or workflows change, update direct callers and remove obsolete compatibility shims unless the user explicitly asks to preserve them.
 - Keep evergreen repository facts in [`.agents/knowledge/README.md`](.agents/knowledge/README.md). Keep transient execution plans in [`plans/ACTIVE.md`](plans/ACTIVE.md) and the `plans/` directory.
 - When behavior, contracts, or workflows change, keep `README.md`, `.agents/knowledge/`, and the public docs in `content/docs` and `apps/docs` synchronized so the three surfaces describe the same current truth.
 

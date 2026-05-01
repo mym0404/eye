@@ -21,9 +21,11 @@ For the smoothest setup, launch the server from the repository root or from any 
 
 On the first index-backed operation, `eye` creates `.eye/config.json` and seeds `sourceRoots` with inferred relative paths such as `src`, `app`, or `packages/web/src`.
 
-`sourceRoots` decides which paths are indexed. Structure and source reads still work across the whole project root.
+`sourceRoots` decides which paths are indexed and helps `get_project_structure` show source roots before sibling directories. Structure and source reads still work across the whole project root.
 
 Edit the generated config when you need to narrow or widen the indexed surface.
+
+Runtime init also creates `.eye/.gitignore`, which keeps local cache files out of Git while leaving `.eye/config.json` visible.
 
 ## Root override
 

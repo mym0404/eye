@@ -1,3 +1,6 @@
+import { mkdir } from "node:fs/promises"
+import path from "node:path"
+
 import { afterEach, describe, expect, it } from "vitest"
 import { loadProjectContext } from "../src/project/context.js"
 import { readSourceRange } from "../src/query/source.js"
@@ -38,6 +41,32 @@ describe("structure and source queries", () => {
     expect(flattenedPaths).not.toContain("dist")
     expect(flattenedPaths).not.toContain("build")
     expect(flattenedPaths).toContain("src")
+  })
+
+  it("prioritizes configured source roots in project structure", async () => {
+    const fixture = await createTempFixtureProject("ts-app")
+    cleanups.push(fixture.cleanup)
+
+    await Promise.all(
+      ["aaa", "docs", "public"].map((directory) =>
+        mkdir(path.join(fixture.projectRoot, directory), { recursive: true }),
+      ),
+    )
+
+    const context = await loadProjectContext({
+      projectRoot: fixture.projectRoot,
+      ensureRuntime: false,
+    })
+    const structure = await getProjectStructure({
+      context,
+      depth: 1,
+      maxEntries: 4,
+      includeFiles: true,
+      includeHidden: false,
+    })
+
+    expect(context.config.sourceRoots).toEqual(["src"])
+    expect(structure.entries[0]?.path).toBe("src")
   })
 
   it("reads a bounded range around a requested line", async () => {

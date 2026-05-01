@@ -274,6 +274,7 @@ const buildCtagsRecords = ({
   const lines = buildLineIndex(text)
   const symbols: NormalizedSymbolRecord[] = []
   const references: NormalizedReferenceRecord[] = []
+  const seenSymbolIds = new Set<string>()
 
   for (const tag of tags) {
     if (!tag.name || !tag.line) {
@@ -298,6 +299,12 @@ const buildCtagsRecords = ({
       line: tag.line,
       column,
     })
+
+    if (seenSymbolIds.has(symbolId)) {
+      continue
+    }
+
+    seenSymbolIds.add(symbolId)
 
     symbols.push({
       symbolId,

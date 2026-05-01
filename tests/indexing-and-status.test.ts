@@ -103,6 +103,38 @@ describe("index lifecycle", () => {
     }
   })
 
+  it("dedupes duplicate ctags symbols during refresh", async () => {
+    const fixture = await createTempFixtureProject("ts-app")
+    cleanups.push(fixture.cleanup)
+
+    await writeFile(
+      path.join(fixture.projectRoot, "src", "retry.ts"),
+      "export const defaultRetryDelays = [0, 1_000, 2_000, 4_000]\n",
+    )
+
+    const context = await loadProjectContext({
+      projectRoot: fixture.projectRoot,
+    })
+    const database = await EyeDatabase.open({
+      databasePath: context.paths.cacheDbPath,
+      projectRoot: context.projectRoot,
+    })
+
+    try {
+      const refreshResult = await refreshProjectIndex({
+        context,
+        database,
+      })
+      const status = database.getIndexStatus()
+
+      expect(refreshResult.indexedFiles).toBeGreaterThan(0)
+      expect(status.status).toBe("ready")
+      expect(status.lastError).toBeUndefined()
+    } finally {
+      database.close()
+    }
+  })
+
   it("indexes only the configured source roots", async () => {
     const fixture = await createTempFixtureProject("monorepo-app")
     cleanups.push(fixture.cleanup)

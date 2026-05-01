@@ -56,9 +56,28 @@ const defaultConfig: EyeProjectConfig = {
   },
 }
 
+const eyeGitignoreContent = ["*", "!config.json", "!.gitignore", ""].join("\n")
+
 type LoadedProjectConfig = {
   config: EyeProjectConfig
   shouldWriteConfig: boolean
+}
+
+const isFileAlreadyExistsError = (error: unknown) =>
+  error instanceof Error &&
+  "code" in error &&
+  (error as { code?: string }).code === "EEXIST"
+
+const ensureEyeGitignore = async (eyeDir: string) => {
+  try {
+    await writeFile(path.join(eyeDir, ".gitignore"), eyeGitignoreContent, {
+      flag: "wx",
+    })
+  } catch (error) {
+    if (!isFileAlreadyExistsError(error)) {
+      throw error
+    }
+  }
 }
 
 export const getProjectPaths = (projectRoot: string): EyeProjectPaths => {
@@ -163,6 +182,8 @@ export const ensureProjectRuntimeLayout = async ({
   if (shouldWriteConfig) {
     await writeFile(paths.configPath, `${JSON.stringify(config, null, 2)}\n`)
   }
+
+  await ensureEyeGitignore(paths.eyeDir)
 
   await writeFile(
     paths.runtimePath,

@@ -10,7 +10,7 @@
 - `src/mcp/`: MCP tool registration, schemas, and formatted text output.
 - `src/project/`: project-root detection, `sourceRoots` inference, ignore rules, and `.eye` path layout.
 - `src/indexing/`: discovery, dirty detection, parse orchestration, token lookup, and symbol-id generation.
-- `src/lang/`: legacy tree-sitter extraction plus TS and Python semantic adapters used by the semantic-first query path.
+- `src/lang/`: tree-sitter extraction code outside the current shipped indexing path, plus TS and Python semantic adapters used by the semantic-first query path.
 - `src/query/`: structure/source reads, unified symbol query flow, and index status summaries.
 - `src/storage/`: SQLite schema, DB helpers, and blob persistence.
 - `src/fallback/`: ripgrep-backed search and heuristic definition fallback.
@@ -26,6 +26,12 @@
 - `README.md`, `content/docs/`, and the exported docs app describe the published `eye-mcp` package and assume the user starts from `npx -y eye-mcp`.
 - Repository-local checkout flow, `pnpm` commands, and `.mcp.json` dogfooding stay in internal knowledge and maintainer workflow.
 
+## Maintenance Policy
+
+- This repository is an active development project and optimizes for the current best implementation over backward compatibility.
+- When internal APIs, paths, or workflows change, update direct callers to the new shape and remove obsolete compatibility shims.
+- Keep docs and knowledge in present tense; describe the current behavior instead of preserving migration history or retired names.
+
 ## Tool Ownership
 
 - `src/mcp/server.ts`: shipped five-tool MCP surface.
@@ -39,6 +45,7 @@
 
 - `.eye/config.json`: committed portable config; in this repo it seeds dogfooding with `src` and `tests`.
 - `.eye/fixtures-manifest.json`: tracked fixture metadata for repository-owned real fixtures.
+- `.eye/.gitignore`: generated runtime ignore file that keeps cache state local while leaving config visible.
 - `.eye/cache.db`, `.eye/blobs/`, `.eye/runtime.json`, `.eye/tmp/`, and `.eye/logs/`: local runtime state ignored by Git.
 - `.mcp.json`: local checkout entrypoint for maintainers; public users are expected to launch the published package through `npx`.
 - `apps/docs/next.config.mjs`: static-export docs configuration, including optional GitHub Pages base-path support.
