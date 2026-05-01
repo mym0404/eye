@@ -335,7 +335,7 @@ describe("MCP server E2E", () => {
       }>
     }
 
-    expect(definitionContent.strategy).toBe("index")
+    expect(definitionContent.strategy).toBe("semantic")
     expect(definitionContent.matches[0]?.filePath).toBe("src/utils/helper.ts")
     expect(definitionContent.matches[0]?.name).toBe("helper")
     const tsSymbolId = definitionContent.matches[0]?.symbolId
@@ -362,7 +362,7 @@ describe("MCP server E2E", () => {
       }>
     }
 
-    expect(referenceContent.strategy).toBe("fallback")
+    expect(referenceContent.strategy).toBe("semantic")
     expect(
       referenceContent.matches.some(
         (candidate) => candidate.filePath === "src/main.ts",
@@ -403,7 +403,7 @@ describe("MCP server E2E", () => {
     )
   })
 
-  it("resolves Python definitions and references through the index-first MCP contract", async () => {
+  it("resolves Python definitions and references through the semantic-first MCP contract", async () => {
     const fixture = await createTempFixtureProject("python-app")
     cleanups.push(fixture.cleanup)
 
@@ -435,7 +435,7 @@ describe("MCP server E2E", () => {
       }>
     }
 
-    expect(definitionContent.strategy).toBe("index")
+    expect(definitionContent.strategy).toBe("semantic")
     expect(definitionContent.matches[0]?.filePath).toBe("app/helpers.py")
     expect(definitionContent.matches[0]?.name).toBe("greet")
     const pythonSymbolId = definitionContent.matches[0]?.symbolId
@@ -462,7 +462,7 @@ describe("MCP server E2E", () => {
       }>
     }
 
-    expect(referenceContent.strategy).toBe("fallback")
+    expect(referenceContent.strategy).toBe("semantic")
     expect(
       referenceContent.matches.some(
         (candidate) => candidate.filePath === "app/main.py",

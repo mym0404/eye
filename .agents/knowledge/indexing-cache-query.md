@@ -3,7 +3,7 @@
 ## Core Contracts
 
 - `get_project_structure`, `read_source_range`, and `get_index_status` must not create `.eye/` runtime state.
-- `query_symbol` and `refresh_index` always run on the index-backed path and may initialize `.eye/` lazily.
+- `query_symbol` and `refresh_index` may initialize `.eye/` lazily; semantic definitions may map locations back onto indexed symbols, while semantic reference matches do not infer nearest-symbol metadata and only carry the requested `symbolId` and indexed symbol name when a `symbolId` target resolved successfully. Index data still powers fallback and exact follow-up targeting.
 - `scopePath` only narrows within configured `sourceRoots`; it never widens indexing or fallback search outside them.
 
 ## Tool To Flow Mapping
@@ -13,8 +13,8 @@
 - `refresh_index`: `withDatabase` -> `refreshProjectIndex`.
 - `get_index_status`: `loadProjectContext({ ensureRuntime: false })` -> `EyeDatabase.openExistingReadOnly()` -> current status or an idle zero-value summary.
 - `query_symbol`:
-  - `action: definition` -> refresh -> indexed lookup -> heuristic fallback definitions.
-  - `action: references` -> refresh -> indexed lookup -> ripgrep fallback.
+  - `action: definition` -> refresh -> semantic lookup for anchor targets -> indexed lookup -> heuristic fallback definitions.
+  - `action: references` -> refresh -> semantic lookup for anchor and `symbolId` targets -> indexed lookup -> ripgrep fallback.
   - `action: context` -> refresh -> definition resolution -> one bounded source snippet around the best definition.
 
 ## Indexing Flow
@@ -78,14 +78,16 @@
 
 ### Definition
 
-- Anchor lookups extract a token from the current line and try indexed `symbols` rows first.
+- Anchor lookups try semantic resolution first for TypeScript/JavaScript and Python.
+- Semantic locations are matched back onto indexed symbols through `findNearestSymbol` when possible so `symbolId` stays usable.
 - Plain-symbol and `symbolId` lookups stay on indexed symbol rows.
 - Remaining low-confidence coverage comes from heuristic fallback definitions.
 
 ### References
 
-- `symbolId` lookups still anchor on the exact indexed definition row.
-- Indexed references come from `references_idx`.
+- Anchor lookups try semantic resolution first for TypeScript/JavaScript and Python.
+- `symbolId` lookups resolve the indexed definition row once to obtain the semantic anchor location; if semantic references return no matches or throw, the query falls back to indexed references by symbol name and then to ripgrep. It does not retry semantic resolution from indexed reference locations.
+- Indexed references come from `references_idx`, fallback candidates come from ripgrep text search, semantic reference candidates only echo the requested `symbolId` and indexed symbol name when available, and the merged candidate list is deduped by `filePath:line:column` before truncation.
 - Remaining budget uses ripgrep with `fixedStrings: true`, `wordMatch: true`, configured ignore globs, and search roots resolved from `sourceRoots` plus `scopePath`.
 
 ### Context

@@ -61,7 +61,7 @@ const clients = [
 const faqs = [
   "One project root at a time, resolved automatically or with projectRoot.",
   "Lazy local indexing instead of a background daemon.",
-  "Index-first symbol lookup with explicit fallback search when needed.",
+  "Semantic-first symbol lookup for anchors and symbolId references, with indexed and text-search fallback.",
 ]
 
 export default function HomePage() {

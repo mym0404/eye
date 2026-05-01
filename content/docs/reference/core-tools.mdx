@@ -26,7 +26,7 @@ Offers one symbol-query surface for `definition`, `references`, and `context`.
 - `target.by` can be `anchor`, `symbolId`, or `symbol`
 - the response always returns `matches`
 - `action: "context"` also returns a bounded `context` block for the best definition
-- resolution is index-first and falls back to heuristic or ripgrep-backed search when the index is not enough
+- anchor definitions, anchor references, and `symbolId` references try semantic navigation first, then fall back to indexed or ripgrep-backed results when needed
 
 The most reliable sequence is to resolve from an anchor first, then reuse the returned `symbolId`.
 

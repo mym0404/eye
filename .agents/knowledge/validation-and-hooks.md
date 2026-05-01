@@ -9,7 +9,7 @@
 ## Command Triggers
 
 - `pnpm install` after `package.json`, `pnpm-lock.yaml`, or runtime dependency changes.
-- `pnpm run doctor` after runtime boot, external binary assumptions (`rg`, `ctags`), storage schema entrypoints, or server startup wiring changes.
+- `pnpm run doctor` after runtime boot, external binary assumptions (`rg`, `ctags`), TypeScript/Pyright semantic adapter assumptions, storage schema entrypoints, or server startup wiring changes.
 - `pnpm docs:check` after edits in `apps/docs`, `content/docs`, docs workflows, or public docs routing/export behavior.
 - `pnpm run lint` after TypeScript, JSON, YAML, or config edits that should satisfy Biome.
 - `pnpm run typecheck` after public type, Zod schema, MCP contract, or cross-module API changes.

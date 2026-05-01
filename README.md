@@ -21,7 +21,7 @@ Use `eye` when you want an agent to:
 The project matters only if it does more than wrap `grep`. The current design aims to give agents a single symbol-query API that:
 
 - disambiguates which symbol the agent means
-- returns exact definition/reference candidates before large file reads
+- returns ranked definition/reference candidates before large file reads
 - reuses project-local index state across repeated queries
 - keeps generated paths and cache state out of normal navigation
 
@@ -31,7 +31,7 @@ The project matters only if it does more than wrap `grep`. The current design ai
 | --- | --- |
 | `get_project_structure` | Returns a bounded tree and skips generated paths such as `build`, `dist`, `out`, `.eye`, and similar defaults. |
 | `read_source_range` | Reads a file around a requested line with numbered output. |
-| `query_symbol` | One symbol-query surface for `definition`, `references`, and `context`. It accepts `target.by = "anchor" | "symbolId" | "symbol"`, always returns `matches`, and adds a bounded `context` block for the best definition when `action` is `context`. Resolution now comes from the persisted index first and falls back to heuristic or ripgrep-backed search when the index is not enough. |
+| `query_symbol` | One symbol-query surface for `definition`, `references`, and `context`. It accepts `target.by = "anchor" | "symbolId" | "symbol"`, always returns `matches`, and adds a bounded `context` block for the best definition when `action` is `context`. Anchor definitions, anchor references, and `symbolId` references try semantic navigation first, then fall back to indexed or text-search results when needed. |
 | `refresh_index` | Refreshes the `.eye` cache for the whole root or a narrowed scope. |
 | `get_index_status` | Reports generation, counts, and cache state. |
 
@@ -42,7 +42,7 @@ The project matters only if it does more than wrap `grep`. The current design ai
 - Persistent cache in `.eye/cache.db`.
 - Content-addressed sidecar blobs in `.eye/blobs/`.
 - `Universal Ctags` as the required external symbol-extraction runtime for index-backed operations.
-- Query resolution is index-first with explicit fallback search.
+- Anchor definitions, anchor references, and `symbolId` references are semantic-first with indexed and text-search fallback.
 - `ripgrep` for file discovery and fallback search.
 
 ## Install the Server
@@ -312,6 +312,14 @@ Read bounded definition context without opening the whole file:
 
 `query_symbol` always returns `matches`. When `action` is `context`, the response also includes a `context` object for the first match.
 
+Current contract:
+
+- anchor definitions, anchor references, and `symbolId` references try semantic navigation first
+- if semantic resolution throws or returns nothing useful, the query falls back to indexed rows and then to lower-confidence text search when needed
+- semantic reference results do not infer `symbolId` from usage-site proximity
+- when a `symbolId` target resolved successfully, semantic reference matches reuse that requested `symbolId` and indexed symbol name
+- merged reference candidates are deduped by `filePath:line:column` before truncation
+
 ## Recommended Agent Flow
 
 For a fresh repository, the most reliable sequence is:
@@ -351,7 +359,7 @@ Two operational notes matter:
 - Six committed fixtures support CI-speed integration tests: `ts-app`, `js-app`, `python-app`, `mixed-app`, `monorepo-app`, and `root-app`.
 - `tests/fixtures/real/` contains pinned git submodules for `microsoft/TypeScript`, `vercel/next.js`, `pallets/flask`, and `django/django`.
 - `pnpm run test:fixtures:real` is the heavy real-repository suite.
-- The real-fixture suite reads structure and source from all four pinned repositories, checks scoped large-repo indexing on Next.js and Django, and runs definition/reference symbol flow on Flask under the index-first contract.
+- The real-fixture suite reads structure and source from all four pinned repositories, checks scoped large-repo indexing on Next.js and Django, and runs definition/reference symbol flow on Flask under the semantic-first contract.
 - The heavy suite is intentionally separate from the default local `validate` flow and runs in its own GitHub Actions workflow.
 
 ## Limitations
@@ -359,7 +367,7 @@ Two operational notes matter:
 - Indexing is lazy and query-triggered; there is no watch mode or background daemon.
 - Name-based lookups can still be ambiguous and may return multiple candidates.
 - `context` is bounded and optimized for agent navigation, not for dumping entire long definitions.
-- The persisted index is ctags-backed, so some anchor or reference lookups can fall back to lower-confidence text search when name-only matching is all that is available.
+- The persisted index is ctags-backed, so some anchor or reference lookups can fall back to lower-confidence text search when semantic or indexed resolution is not enough.
 - The committed in-repo fixtures are small integration corpora; large OSS coverage lives in `tests/fixtures/real/` submodules.
 
 ## For Maintainers
