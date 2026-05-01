@@ -9,7 +9,7 @@
 - `src/mcp/`: MCP tool registration, schemas, and formatted text output.
 - `src/project/`: project-root detection, `sourceRoots` inference, ignore rules, and `.eye` path layout.
 - `src/indexing/`: discovery, dirty detection, parse orchestration, token lookup, and symbol-id generation.
-- `src/lang/`: legacy tree-sitter extraction and TS/Python semantic adapters kept outside the shipped query path.
+- `src/lang/`: legacy tree-sitter extraction plus TS and Python semantic adapters kept outside the shipped query path.
 - `src/query/`: structure/source reads, unified symbol query flow, and index status summaries.
 - `src/storage/`: SQLite schema, DB helpers, and blob persistence.
 - `src/fallback/`: ripgrep-backed search and heuristic definition fallback.
@@ -37,7 +37,7 @@
 - `apps/docs/next.config.mjs`: static-export docs configuration, including optional GitHub Pages base-path support.
 - `apps/docs/app/` and `apps/docs/components/`: public docs UI shell, layout, and client-side search dialog.
 - `content/docs/`: public-only documentation content; internal agent knowledge stays under `.agents/knowledge/` and `plans/`.
-- `lefthook.yml`: local `pre-commit` and `pre-push` gates.
+- `lefthook.yml`: local `pre-commit` gate.
 
 ## Tests
 

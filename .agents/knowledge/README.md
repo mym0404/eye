@@ -4,8 +4,9 @@
 
 - [Project map](project-map.md)
 - [Architecture](architecture.md)
-- [Indexing, cache, query](business-logic/indexing-cache-query.md)
-- [Validation and hooks](operations/validation-and-hooks.md)
+- [Indexing, cache, query](indexing-cache-query.md)
+- [Validation and hooks](validation-and-hooks.md)
+- [Design](design.md)
 - [ExecPlan format](../../PLANS.md)
 - [Active plans](../../plans/ACTIVE.md)
 
@@ -19,12 +20,13 @@
 
 - [project-map.md](project-map.md): module ownership, runtime/config surfaces, and test map.
 - [architecture.md](architecture.md): tool surface, read-only versus index-backed flows, and runtime boundaries.
-- [business-logic/indexing-cache-query.md](business-logic/indexing-cache-query.md): `.eye` layout, indexing lifecycle, query strategy, and fallback rules.
-- [operations/validation-and-hooks.md](operations/validation-and-hooks.md): pnpm commands, Lefthook, CI, docs gates, and completion rules.
+- [indexing-cache-query.md](indexing-cache-query.md): `.eye` layout, indexing lifecycle, query strategy, and fallback rules.
+- [validation-and-hooks.md](validation-and-hooks.md): pnpm commands, Lefthook, CI, docs gates, and completion rules.
+- [design.md](design.md): public docs UI surfaces, theme tokens, and browser validation expectations.
 
 ## Update Triggers
 
 - layout, ownership, or repo-local dogfooding entrypoint changes: [project-map.md](project-map.md)
-- root resolution, `.eye` lifecycle, indexing, `scopePath`, or query behavior changes: [architecture.md](architecture.md) and [business-logic/indexing-cache-query.md](business-logic/indexing-cache-query.md)
-- validation flow, package manager, hooks, or CI changes: [operations/validation-and-hooks.md](operations/validation-and-hooks.md)
-- docs app structure, public docs content routing, or docs command changes: [project-map.md](project-map.md) and [operations/validation-and-hooks.md](operations/validation-and-hooks.md)
+- root resolution, `.eye` lifecycle, indexing, `scopePath`, or query behavior changes: [architecture.md](architecture.md) and [indexing-cache-query.md](indexing-cache-query.md)
+- validation flow, package manager, hooks, or CI changes: [validation-and-hooks.md](validation-and-hooks.md)
+- docs app structure, public docs content routing, public docs UI, or docs command changes: [project-map.md](project-map.md), [design.md](design.md), and [validation-and-hooks.md](validation-and-hooks.md)

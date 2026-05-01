@@ -19,6 +19,7 @@
 - `pnpm run test:coverage` before release-facing handoff when code paths changed broadly.
 - `pnpm run build` after entrypoint, package surface, or export changes and before release-facing handoff.
 - `pnpm run validate` before broad handoff when a change spans multiple layers.
+- `pnpm run validate && pnpm docs:check` before broad handoff or release-facing changes that should include the public docs export.
 
 ## Lefthook
 
@@ -30,7 +31,7 @@
 ## CI
 
 - `.github/workflows/ci.yml` runs on pushes to `main` and on pull requests.
-- CI uses Node 25, enables Corepack, installs `ripgrep` and `universal-ctags`, runs `pnpm install --frozen-lockfile`, then runs `doctor`, `lint`, `typecheck`, `test`, explicit MCP E2E, coverage, and `build`.
+- CI uses Node 25, enables Corepack, installs `ripgrep` and `universal-ctags`, runs `pnpm install --frozen-lockfile`, then runs `doctor`, `lint`, `typecheck`, `test`, explicit MCP E2E, coverage, `build`, and `docs:check`.
 - CI uploads the `coverage/` artifact and sends `coverage/lcov.info` to Codecov with `disable_search: true`.
 - `.github/workflows/real-fixtures.yml` is the heavy validation job. It checks out submodules recursively and runs `pnpm run test:fixtures:real`.
 
