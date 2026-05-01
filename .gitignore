@@ -11,3 +11,4 @@ coverage
 .eye/logs
 apps/docs/.next
 apps/docs/out
+apps/docs/.source
