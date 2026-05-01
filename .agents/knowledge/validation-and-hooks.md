@@ -22,7 +22,7 @@
 - `pnpm run validate` before broad handoff when a change spans multiple layers.
 - `pnpm run validate && pnpm docs:check` before broad handoff or release-facing changes that should include the public docs export.
 - `pnpm run release:npm:check` before publishing the npm package.
-- `pnpm run release:npm` for the actual npm publish flow after local verification and npm auth are ready.
+- `pnpm run release:npm` for the actual npm publish flow after local verification and npm auth are ready; it runs the release check, bumps the package patch version with `npm version patch`, then publishes.
 
 ## Lefthook
 
