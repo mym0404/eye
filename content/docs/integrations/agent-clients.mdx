@@ -13,24 +13,10 @@ description: Connect eye to Codex, Claude Code, or a generic .mcp.json client.
 codex mcp add eye -- npx -y eye-mcp
 ```
 
-Inside this repository, a lower-friction setup is:
-
-```bash
-codex mcp add eye -- pnpm --dir /absolute/path/to/eye run mcp:stdio
-```
-
 ## Claude Code
 
 ```bash
 claude mcp add --scope project eye -- npx -y eye-mcp
-claude mcp list
-claude mcp get eye
-```
-
-Inside this repository, a local checkout setup is:
-
-```bash
-claude mcp add --scope project eye -- pnpm --dir /absolute/path/to/eye run mcp:stdio
 claude mcp list
 claude mcp get eye
 ```
@@ -47,13 +33,5 @@ claude mcp get eye
   }
 }
 ```
-
-## Dogfooding in this repository
-
-This repository ships a project-local `.mcp.json` so MCP-aware clients can use `eye` directly from the checkout without extra environment setup.
-
-- the bundled config runs `pnpm exec tsx src/index.ts`
-- the committed `.eye/config.json` seeds `sourceRoots` with `src` and `tests`
-- opening this repository is enough when your client supports project-local `.mcp.json`
 
 Next step: [frequently asked questions](../../faq).

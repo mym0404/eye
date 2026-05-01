@@ -14,7 +14,7 @@
 - The docs app uses Fumadocs UI as the shell and keeps custom UI local to `apps/docs`.
 - The visual system uses IBM Plex Sans for text and JetBrains Mono for code.
 - Theme colors come from CSS variables in `apps/docs/app/global.css`; keep light and dark values in sync.
-- The public UI is text-first and setup-focused. Prefer dense, readable documentation screens over decorative marketing sections.
+- The public UI is text-first and setup-focused. Package onboarding should assume `npx -y eye-mcp`, not repository checkout steps.
 - Preserve the skip link, visible focus states, theme switch, and responsive search behavior when changing layout.
 - Do not put internal agent knowledge, plans, or maintenance notes into public UI copy.
 

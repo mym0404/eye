@@ -2,7 +2,8 @@
 
 ## Top Level
 
-- `.mcp.json`: repo-local stdio MCP config for dogfooding `eye` from this checkout.
+- `README.md`: published-package onboarding for `npx -y eye-mcp` users.
+- `.mcp.json`: repo-local stdio MCP config for dogfooding from this checkout.
 - `apps/docs/`: public Next.js + Fumadocs site exported for GitHub Pages-style hosting.
 - `content/docs/`: public MDX source consumed by the docs app.
 - `src/index.ts`: stdio bootstrap.
@@ -20,6 +21,11 @@
 - `.agents/knowledge/`: evergreen repository knowledge.
 - `plans/`: transient ExecPlans and active-plan routing.
 
+## Audience Split
+
+- `README.md`, `content/docs/`, and the exported docs app describe the published `eye-mcp` package and assume the user starts from `npx -y eye-mcp`.
+- Repository-local checkout flow, `pnpm` commands, and `.mcp.json` dogfooding stay in internal knowledge and maintainer workflow.
+
 ## Tool Ownership
 
 - `src/mcp/server.ts`: shipped five-tool MCP surface.
@@ -34,6 +40,7 @@
 - `.eye/config.json`: committed portable config; in this repo it seeds dogfooding with `src` and `tests`.
 - `.eye/fixtures-manifest.json`: tracked fixture metadata for repository-owned real fixtures.
 - `.eye/cache.db`, `.eye/blobs/`, `.eye/runtime.json`, `.eye/tmp/`, and `.eye/logs/`: local runtime state ignored by Git.
+- `.mcp.json`: local checkout entrypoint for maintainers; public users are expected to launch the published package through `npx`.
 - `apps/docs/next.config.mjs`: static-export docs configuration, including optional GitHub Pages base-path support.
 - `apps/docs/app/` and `apps/docs/components/`: public docs UI shell, layout, and client-side search dialog.
 - `content/docs/`: public-only documentation content; internal agent knowledge stays under `.agents/knowledge/` and `plans/`.

@@ -4,14 +4,6 @@
 
 `eye-mcp` is a source-browsing MCP server for coding agents working in large local repositories.
 
-It is built for a simple workflow:
-
-- map the repository before changing code
-- read only the lines you need
-- resolve a symbol from an anchor, then reuse `symbolId`
-- follow definitions, references, and bounded context without broad scans
-- reuse a lazy local cache instead of re-indexing the repository every time
-
 Public docs: [mym0404.github.io/eye](https://mym0404.github.io/eye/)
 
 ## What It Does
@@ -29,7 +21,6 @@ Public docs: [mym0404.github.io/eye](https://mym0404.github.io/eye/)
 Requirements:
 
 - Node.js 20+
-- Corepack
 - `Universal Ctags` on `PATH` as `ctags`
 - `ripgrep` on `PATH` as `rg`
 
@@ -38,31 +29,10 @@ Install prerequisites:
 - macOS: `brew install universal-ctags ripgrep`
 - Ubuntu 24.04: `sudo apt-get update && sudo apt-get install --yes universal-ctags ripgrep`
 
-Optional local build:
-
-```bash
-corepack enable
-corepack use pnpm@10
-pnpm install
-pnpm run build
-```
-
-Optional health check:
-
-```bash
-pnpm run doctor
-```
-
-Quick run without cloning:
+Run the published package:
 
 ```bash
 npx -y eye-mcp
-```
-
-Optional local stdio entrypoint:
-
-```bash
-node /absolute/path/to/eye/dist/index.js
 ```
 
 ## Add It To Your Agent
@@ -161,58 +131,9 @@ On the first index-backed operation, `eye` creates `.eye/config.json` and fills 
 
 `sourceRoots` only controls indexing. Structure and source reads still work across the whole resolved project root.
 
-## Dogfooding In This Repo
-
-This repository ships a project-local `.mcp.json`, so MCP-aware clients can use `eye-mcp` directly from this checkout.
-
-- the bundled config runs `pnpm exec tsx src/index.ts`
-- the committed `.eye/config.json` sets `sourceRoots` to `src` and `tests`
-- if your client reads project `.mcp.json`, opening this repo is enough
-
-For Codex CLI in this repo:
-
-```bash
-codex mcp add eye -- pnpm --dir /absolute/path/to/eye run mcp:stdio
-```
-
-For normal users, prefer the package-based form:
-
-```bash
-codex mcp add eye -- npx -y eye-mcp
-```
-
 ## Limitations
 
 - indexing is lazy and query-triggered; there is no watch mode
 - name-based lookups can still be ambiguous
 - `context` is bounded for navigation, not whole-file dumping
 - the persisted index is ctags-backed, so some queries can still fall back to lower-confidence text search
-
-## Contributing
-
-If you want to work on the server itself instead of just using it:
-
-- clone the repository
-- install `Universal Ctags` and `ripgrep`
-- run `pnpm install`
-- use `pnpm run build` or `pnpm run mcp:stdio`
-
-## Maintainer Commands
-
-Default validation:
-
-```bash
-pnpm run doctor
-pnpm run lint
-pnpm run typecheck
-pnpm run test
-pnpm run test:e2e
-pnpm run test:coverage
-pnpm run build
-```
-
-Heavy real-repository fixtures:
-
-```bash
-pnpm run test:fixtures:real
-```

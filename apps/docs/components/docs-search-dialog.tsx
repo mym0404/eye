@@ -30,7 +30,7 @@ const searchIndex: SearchEntry[] = [
   {
     title: "Install the Server",
     section: "Getting Started",
-    description: "Prepare Node.js, Corepack, Universal Ctags, and ripgrep.",
+    description: "Prepare Node.js 20+, Universal Ctags, and ripgrep.",
     url: "/docs/getting-started/install",
   },
   {

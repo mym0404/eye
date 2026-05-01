@@ -4,12 +4,12 @@ const quickStart = [
   {
     step: "01",
     title: "Install the local runtime",
-    body: "Prepare Node.js, Corepack, Universal Ctags, and ripgrep before wiring the MCP server.",
+    body: "Prepare Node.js 20+, Universal Ctags, and ripgrep before wiring the MCP server.",
   },
   {
     step: "02",
     title: "Run the published package",
-    body: "Use npx -y eye-mcp for normal setup, or keep the local checkout flow for development.",
+    body: "Use npx -y eye-mcp as the default setup path in your MCP client.",
   },
   {
     step: "03",

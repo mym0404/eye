@@ -5,6 +5,7 @@
 - Use Corepack-managed pnpm only.
 - The repository pins pnpm through `packageManager` in `package.json`.
 - If Corepack is missing on the machine, install it first and then enable it.
+- This package-manager requirement is for repository development and release work, not for end users launching `eye-mcp` through `npx`.
 
 ## Command Triggers
 
@@ -20,6 +21,8 @@
 - `pnpm run build` after entrypoint, package surface, or export changes and before release-facing handoff.
 - `pnpm run validate` before broad handoff when a change spans multiple layers.
 - `pnpm run validate && pnpm docs:check` before broad handoff or release-facing changes that should include the public docs export.
+- `pnpm run release:npm:check` before publishing the npm package.
+- `pnpm run release:npm` for the actual npm publish flow after local verification and npm auth are ready.
 
 ## Lefthook
 
@@ -38,6 +41,7 @@
 ## Docs-Only Changes
 
 - Public docs live in `apps/docs` and `content/docs`; internal evergreen knowledge lives in `.agents/knowledge/`.
+- `README.md` and the public docs are user-facing package onboarding and should assume `npx -y eye-mcp` as the default entrypoint.
 - Use `pnpm docs:check` as the repo-native docs gate for the public site.
 - There is still no separate permanent validator just for the internal knowledge tree.
 - For docs-only edits outside the public docs app, re-read the routed documents, verify important relative links and referenced files, and avoid adding permanent validation tooling just for the knowledge tree.

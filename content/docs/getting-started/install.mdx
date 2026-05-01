@@ -10,7 +10,6 @@ description: Prepare the local runtime and launch eye-mcp from an MCP client.
 ## Requirements
 
 - Node.js 20 or newer
-- Corepack
 - `ctags` on `PATH`, and it must be `Universal Ctags`
 - `rg` on `PATH`
 
@@ -27,27 +26,6 @@ After the prerequisites are installed, most users can point their MCP client at 
 
 ```bash
 npx -y eye-mcp
-```
-
-## Build from a local checkout
-
-```bash
-corepack enable
-corepack use pnpm@10
-pnpm install
-pnpm run build
-```
-
-Optional health check:
-
-```bash
-pnpm run doctor
-```
-
-The local stdio entrypoint is:
-
-```bash
-node /absolute/path/to/eye/dist/index.js
 ```
 
 Next step: [project root detection and first-run config](../project-root-and-config).

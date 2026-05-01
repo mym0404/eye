@@ -15,6 +15,7 @@
 - This tree holds durable repository facts that change implementation or verification decisions.
 - `plans/` holds transient execution plans and status routing, not evergreen knowledge.
 - Keep one canonical explanation per topic and update it when verified behavior changes.
+- `README.md` and the public docs describe the published `eye-mcp` package for `npx` users; repository-local dogfooding and maintainer workflow live here.
 
 ## Canonical Topics
 
@@ -29,4 +30,4 @@
 - layout, ownership, or repo-local dogfooding entrypoint changes: [project-map.md](project-map.md)
 - root resolution, `.eye` lifecycle, indexing, `scopePath`, or query behavior changes: [architecture.md](architecture.md) and [indexing-cache-query.md](indexing-cache-query.md)
 - validation flow, package manager, hooks, or CI changes: [validation-and-hooks.md](validation-and-hooks.md)
-- docs app structure, public docs content routing, public docs UI, or docs command changes: [project-map.md](project-map.md), [design.md](design.md), and [validation-and-hooks.md](validation-and-hooks.md)
+- published package onboarding, public docs content routing, public docs UI, or docs command changes: [project-map.md](project-map.md), [design.md](design.md), and [validation-and-hooks.md](validation-and-hooks.md)
