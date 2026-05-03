@@ -10,11 +10,11 @@ Public docs: [mym0404.github.io/eye](https://mym0404.github.io/eye/)
 
 | Tool | What it does |
 | --- | --- |
-| `get_project_structure` | Returns a bounded tree and skips generated paths such as `build`, `dist`, `out`, and `.eye`. |
-| `read_source_range` | Reads source around a requested line with numbered output. |
-| `query_symbol` | Resolves `definition`, `references`, and `context` from `anchor`, `symbolId`, or `symbol`. |
-| `refresh_index` | Refreshes the local `.eye` cache for the whole project or a narrowed scope. |
-| `get_index_status` | Reports cache generation, counts, and readiness. |
+| `get_project_structure` | Start here on unfamiliar repositories. Returns a bounded read-only tree and does not create `.eye`. |
+| `read_source_range` | Reads project-root-relative source around a 1-based line with numbered output. |
+| `query_symbol` | Resolves `definition`, `references`, and `context` from a symbol-name shorthand, `anchor`, `symbolId`, or canonical `symbol` target. |
+| `refresh_index` | Creates or refreshes the local `.eye` cache for the whole project or a narrowed scope. |
+| `get_index_status` | Reports cache generation, counts, and readiness without creating `.eye`. |
 
 ## Quick Start
 
@@ -78,11 +78,23 @@ Typical flow:
 
 1. `get_project_structure`
 2. `read_source_range`
-3. `query_symbol` with `action: "definition"`
+3. `query_symbol` with `target: "Name"` and `action: "definition"`
 4. reuse the returned `symbolId` for `references` or `context`
 5. `refresh_index` when the repository changed or you want a deterministic refresh
 
-Example:
+Quick symbol-name lookup:
+
+```json
+{
+  "name": "query_symbol",
+  "arguments": {
+    "target": "helper",
+    "action": "definition"
+  }
+}
+```
+
+Anchor lookup is still available when the agent already has a source location:
 
 ```json
 {

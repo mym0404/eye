@@ -94,6 +94,17 @@ const symbolQueryContextSchema: z.ZodType<SymbolQueryContext> = z.object({
   lines: z.array(sourceLineSchema),
 })
 
+type SymbolQueryTargetInput =
+  | SymbolQueryTarget
+  | string
+  | {
+      name: string
+    }
+  | {
+      by: "name"
+      name: string
+    }
+
 const symbolQueryTargetSchema: z.ZodType<SymbolQueryTarget> =
   z.discriminatedUnion("by", [
     z.object({
@@ -111,6 +122,51 @@ const symbolQueryTargetSchema: z.ZodType<SymbolQueryTarget> =
       symbol: z.string().min(1),
     }),
   ])
+
+const symbolQueryTargetInputSchema: z.ZodType<SymbolQueryTargetInput> = z.union(
+  [
+    symbolQueryTargetSchema,
+    z.string().min(1),
+    z
+      .object({
+        by: z.literal("name"),
+        name: z.string().min(1),
+      })
+      .strict(),
+    z
+      .object({
+        name: z.string().min(1),
+      })
+      .strict(),
+  ],
+)
+
+const normalizeSymbolQueryTarget = (
+  target: SymbolQueryTargetInput,
+): SymbolQueryTarget => {
+  if (typeof target === "string") {
+    return {
+      by: "symbol",
+      symbol: target,
+    }
+  }
+
+  if ("by" in target) {
+    if (target.by === "name") {
+      return {
+        by: "symbol",
+        symbol: target.name,
+      }
+    }
+
+    return target
+  }
+
+  return {
+    by: "symbol",
+    symbol: target.name,
+  }
+}
 
 const withDatabase = async <ResultValue>({
   projectRoot,
@@ -152,7 +208,7 @@ export const createEyeServer = () => {
         logging: {},
       },
       instructions:
-        "Use bounded repository reads. Resolve a symbol once, then reuse symbolId with query_symbol for exact navigation. The server maintains a lazy project-local .eye cache for semantic, index-backed, and fallback queries.",
+        'Use bounded repository reads. For a quick symbol lookup, call query_symbol with target: "Name" and action: "definition", then reuse the returned symbolId for references or context. The server maintains a lazy project-local .eye cache for semantic, index-backed, and fallback queries.',
     },
   )
 
@@ -161,7 +217,7 @@ export const createEyeServer = () => {
     {
       title: "Get Project Structure",
       description:
-        "Return a bounded directory tree for the selected project root.",
+        "Use first on unfamiliar repositories. Returns a bounded read-only directory tree and does not create .eye runtime state.",
       annotations: {
         readOnlyHint: true,
         idempotentHint: true,
@@ -216,7 +272,7 @@ export const createEyeServer = () => {
     {
       title: "Read Source Range",
       description:
-        "Read a file around a requested line and return numbered lines.",
+        "Read numbered source lines without indexing. filePath is projectRoot-relative and line is 1-based.",
       annotations: {
         readOnlyHint: true,
         idempotentHint: true,
@@ -275,10 +331,10 @@ export const createEyeServer = () => {
     {
       title: "Query Symbol",
       description:
-        "Resolve symbol definitions, references, or definition context using semantic-first navigation with lazy indexing and fallback search.",
+        'Resolve symbol definitions, references, or context. Start with target: "Name" and action: "definition"; then reuse the returned symbolId for exact references or context.',
       inputSchema: z.object({
         projectRoot: z.string().optional(),
-        target: symbolQueryTargetSchema,
+        target: symbolQueryTargetInputSchema,
         action: z.enum(["definition", "references", "context"]),
         scopePath: z.string().optional(),
         maxResults: z.number().int().min(1).max(200).optional(),
@@ -317,7 +373,7 @@ export const createEyeServer = () => {
             querySymbol({
               context,
               database,
-              target,
+              target: normalizeSymbolQueryTarget(target),
               action,
               scopePath,
               maxResults: maxResults ?? (action === "references" ? 50 : 20),
@@ -349,7 +405,7 @@ export const createEyeServer = () => {
     {
       title: "Refresh Index",
       description:
-        "Refresh the lazy project-local index for the whole root or a narrowed scope.",
+        "Create or refresh the .eye index for the whole root or scopePath. Use after code changes or before deterministic indexed navigation.",
       inputSchema: z.object({
         projectRoot: z.string().optional(),
         scopePath: z.string().optional(),
@@ -400,7 +456,7 @@ export const createEyeServer = () => {
     {
       title: "Get Index Status",
       description:
-        "Return the current lazy index status for the selected project root.",
+        "Read the current lazy index status. This is read-only and returns idle counts when .eye/cache.db does not exist.",
       annotations: {
         readOnlyHint: true,
         idempotentHint: true,

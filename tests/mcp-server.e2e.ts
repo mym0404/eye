@@ -403,6 +403,46 @@ describe("MCP server E2E", () => {
     )
   })
 
+  it("accepts query_symbol symbol-name shorthands", async () => {
+    const fixture = await createTempFixtureProject("ts-app")
+    cleanups.push(fixture.cleanup)
+
+    const client = new McpTestClient()
+    clients.push(client)
+
+    await client.initialize()
+
+    const targets: unknown[] = [
+      "helper",
+      { name: "helper" },
+      { by: "name", name: "helper" },
+      { by: "symbol", symbol: "helper" },
+    ]
+
+    for (const target of targets) {
+      const definitions = await client.callTool({
+        name: "query_symbol",
+        args: {
+          projectRoot: fixture.projectRoot,
+          target,
+          action: "definition",
+          maxResults: 10,
+        },
+      })
+      const definitionContent = definitions.structuredContent as {
+        matches: Array<{
+          filePath: string
+          name?: string
+          symbolId?: string
+        }>
+      }
+
+      expect(definitionContent.matches[0]?.filePath).toBe("src/utils/helper.ts")
+      expect(definitionContent.matches[0]?.name).toBe("helper")
+      expect(definitionContent.matches[0]?.symbolId).toBeTruthy()
+    }
+  })
+
   it("resolves Python definitions and references through the semantic-first MCP contract", async () => {
     const fixture = await createTempFixtureProject("python-app")
     cleanups.push(fixture.cleanup)

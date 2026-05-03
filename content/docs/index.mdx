@@ -34,7 +34,7 @@ The most reliable flow for a fresh repository is:
 
 1. Start with `get_project_structure`.
 2. Read the exact file range you care about with `read_source_range`.
-3. Resolve a symbol with `query_symbol`.
+3. Resolve a symbol with `query_symbol` using `target: "Name"` first.
 4. Reuse the returned `symbolId` for follow-up references or context.
 5. Refresh the local cache only when the repository changed.
 

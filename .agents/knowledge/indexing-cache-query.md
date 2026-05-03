@@ -4,6 +4,7 @@
 
 - `get_project_structure`, `read_source_range`, and `get_index_status` must not create `.eye/` runtime state.
 - `query_symbol` and `refresh_index` may initialize `.eye/` lazily; semantic definitions may map locations back onto indexed symbols, while semantic reference matches do not infer nearest-symbol metadata and only carry the requested `symbolId` and indexed symbol name when a `symbolId` target resolved successfully. Index data still powers fallback and exact follow-up targeting.
+- `query_symbol` accepts MCP-boundary symbol-name shorthands and normalizes them before query logic runs.
 - `scopePath` only narrows within configured `sourceRoots`; it never widens indexing or fallback search outside them.
 
 ## Tool To Flow Mapping
@@ -76,6 +77,7 @@
 - `target.by = "anchor"` starts from the source location the agent is already reading.
 - `target.by = "symbolId"` is the preferred exact follow-up target after a successful first resolve.
 - `target.by = "symbol"` is the lowest-confidence entry path and relies more heavily on indexed and fallback matching.
+- `target: "Name"`, `{ name: "Name" }`, and `{ by: "name", name: "Name" }` are accepted as MCP input shorthands for `{ by: "symbol", symbol: "Name" }`.
 
 ### Definition
 

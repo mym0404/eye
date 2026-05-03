@@ -9,39 +9,36 @@ description: What each shipped MCP tool does and when to use it.
 
 ## `get_project_structure`
 
-Returns a bounded tree and skips generated paths such as `build`, `dist`, `out`, `.eye`, and similar defaults.
+Returns a bounded read-only tree and skips generated paths such as `build`, `dist`, `out`, `.eye`, and similar defaults.
 
 Configured `sourceRoots` are ordered before sibling directories so source folders stay visible in bounded results.
 
-Use it first when the repository is unfamiliar and you need an ownership map before touching code.
+Use it first when the repository is unfamiliar. It does not create `.eye` runtime state.
 
 ## `read_source_range`
 
-Reads a file around a requested line with numbered output.
+Reads a file around a requested 1-based line with numbered output.
 
-Use it when the file is already known and you need exact local context instead of full-file reads.
+Use it when the file is already known and you need exact local context instead of full-file reads. `filePath` is relative to `projectRoot`.
 
 ## `query_symbol`
 
 Offers one symbol-query surface for `definition`, `references`, and `context`.
 
-- `target.by` can be `anchor`, `symbolId`, or `symbol`
+- the easiest first call is `target: "Name"` with `action: "definition"`
+- canonical `target.by` can be `anchor`, `symbolId`, or `symbol`
+- `{ "name": "Name" }` and `{ "by": "name", "name": "Name" }` are accepted as symbol-name shorthands
 - the response always returns `matches`
 - `action: "context"` also returns a bounded `context` block for the best definition
 - anchor definitions, anchor references, and `symbolId` references try semantic navigation first, then fall back to indexed or ripgrep-backed results when needed
 
-The most reliable sequence is to resolve from an anchor first, then reuse the returned `symbolId`.
+The fastest sequence is to resolve by name first, then reuse the returned `symbolId`.
 
 ```json
 {
   "name": "query_symbol",
   "arguments": {
-    "target": {
-      "by": "anchor",
-      "filePath": "src/main.ts",
-      "line": 42,
-      "column": 17
-    },
+    "target": "helper",
     "action": "definition"
   }
 }
@@ -64,7 +61,7 @@ Then follow up with the returned `symbolId`:
 
 ## `refresh_index`
 
-Refreshes the `.eye` cache for the whole root or a narrowed scope.
+Creates or refreshes the `.eye` cache for the whole root or a narrowed scope.
 
 Use it after repository changes or when you want a deterministic indexing pass before deeper navigation.
 

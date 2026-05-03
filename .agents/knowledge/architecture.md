@@ -32,7 +32,8 @@
 
 ## Query Strategy
 
-- `query_symbol` accepts `target.by = "anchor" | "symbolId" | "symbol"`.
+- `query_symbol` accepts `target: "Name"` plus `{ name }` and `{ by: "name", name }` shorthands at the MCP boundary, then normalizes them to `target.by = "symbol"`.
+- Canonical `query_symbol` targets remain `target.by = "anchor" | "symbolId" | "symbol"` internally.
 - `definition` resolves semantic candidates first for anchor targets, then indexed candidates, then heuristic fallback definitions.
 - `references` resolves semantic candidates first for anchor targets and for `symbolId` targets anchored at the indexed definition location; semantic failures or empty semantic results fall back to indexed rows and then ripgrep, without any second semantic pass over indexed reference locations.
 - `context` reuses definition resolution, keeps the full `matches` list, and attaches one bounded snippet for the best definition candidate.
