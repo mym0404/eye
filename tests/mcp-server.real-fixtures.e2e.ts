@@ -134,6 +134,79 @@ describe("MCP server real fixture E2E", () => {
     expect(statusContent.referenceCount).toBeGreaterThan(0)
   })
 
+  it("indexes the real TypeScript repository and resolves symbol references", async () => {
+    const fixture = realFixtures.typescript
+    const client = await createClient(fixture.projectRoot)
+
+    const refresh = await client.callTool({
+      name: "refresh_index",
+      args: {
+        projectRoot: fixture.projectRoot,
+        scopePath: fixture.indexScopePath,
+      },
+    })
+    const refreshContent = refresh.structuredContent as {
+      indexedFiles: number
+    }
+
+    expect(refreshContent.indexedFiles).toBeGreaterThanOrEqual(
+      fixture.minIndexedFiles,
+    )
+
+    const definitions = await client.callTool({
+      name: "query_symbol",
+      args: {
+        projectRoot: fixture.projectRoot,
+        target: {
+          by: "symbol",
+          symbol: fixture.semantic.symbol,
+        },
+        action: "definition",
+        maxResults: 20,
+      },
+    })
+    const definitionContent = definitions.structuredContent as {
+      strategy: string
+      matches: Array<{
+        filePath: string
+        symbolId?: string
+      }>
+    }
+    const definition = definitionContent.matches.find(
+      (candidate) =>
+        candidate.filePath === fixture.semantic.definitionPath &&
+        candidate.symbolId,
+    )
+
+    expect(definitionContent.strategy).toBe("index")
+    expect(definition).toBeDefined()
+
+    const references = await client.callTool({
+      name: "query_symbol",
+      args: {
+        projectRoot: fixture.projectRoot,
+        target: {
+          by: "symbolId",
+          symbolId: definition?.symbolId ?? "",
+        },
+        action: "references",
+        maxResults: 200,
+        includeDeclaration: false,
+      },
+    })
+    const referenceContent = references.structuredContent as {
+      matches: Array<{
+        filePath: string
+      }>
+    }
+
+    expect(
+      referenceContent.matches.some(
+        (candidate) => candidate.filePath === fixture.semantic.referencePath,
+      ),
+    ).toBe(true)
+  })
+
   it("indexes the real Flask repository and resolves semantic-capable symbol flows", async () => {
     const fixture = realFixtures.flask
     const client = await createClient(fixture.projectRoot)
